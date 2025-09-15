@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -12,7 +12,8 @@ import {
   User,
   ChevronRight,
   LogOut,
-  Kanban
+  Kanban,
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -26,6 +27,8 @@ const navigation = [
 
 function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+  const settingsMenuRef = useRef(null);
   const location = useLocation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -34,6 +37,20 @@ function Layout({ children }) {
     logout();
     navigate('/login');
   };
+
+  // Close settings menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (settingsMenuRef.current && !settingsMenuRef.current.contains(event.target)) {
+        setSettingsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -50,7 +67,7 @@ function Layout({ children }) {
                 <X className="w-6 h-6 text-white" />
               </button>
             </div>
-            <SidebarContent onLogout={handleLogout} />
+            <SidebarContent />
           </div>
         </div>
       )}
@@ -58,7 +75,7 @@ function Layout({ children }) {
       {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:flex-shrink-0">
         <div className="flex flex-col w-72">
-          <SidebarContent onLogout={handleLogout} />
+          <SidebarContent />
         </div>
       </div>
 
@@ -85,9 +102,49 @@ function Layout({ children }) {
             </div>
             
             <div className="flex items-center space-x-3">
-              <button className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200">
-                <Settings className="w-5 h-5" />
-              </button>
+              {/* Settings Dropdown */}
+              <div className="relative" ref={settingsMenuRef}>
+                <button 
+                  onClick={() => setSettingsMenuOpen(!settingsMenuOpen)}
+                  className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200 flex items-center space-x-1"
+                >
+                  <Settings className="w-5 h-5" />
+                  <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${settingsMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Settings Dropdown Menu */}
+                {settingsMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">Settings</p>
+                      <p className="text-xs text-gray-500">Manage your account</p>
+                    </div>
+                    
+                    <div className="py-1">
+                      <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                        <User className="w-4 h-4 mr-3 text-gray-400" />
+                        Profile Settings
+                      </button>
+                      <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                        <Settings className="w-4 h-4 mr-3 text-gray-400" />
+                        Preferences
+                      </button>
+                    </div>
+                    
+                    <div className="border-t border-gray-100 py-1">
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
+                      >
+                        <LogOut className="w-4 h-4 mr-3" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* User Avatar */}
               <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-200">
                 <User className="w-5 h-5 text-white" />
               </div>
@@ -106,7 +163,7 @@ function Layout({ children }) {
   );
 }
 
-function SidebarContent({ onLogout }) {
+function SidebarContent() {
   const location = useLocation();
   const { user } = useAuth();
 
@@ -191,17 +248,8 @@ function SidebarContent({ onLogout }) {
               {user?.email || 'user@example.com'}
             </p>
           </div>
-          <Settings className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+          {/* <Settings className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" /> */}
         </div>
-        
-        {/* Logout Button */}
-        <button
-          onClick={onLogout}
-          className="w-full mt-3 flex items-center justify-center px-4 py-3 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200 hover:scale-105"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Sign Out
-        </button>
       </div>
     </div>
   );

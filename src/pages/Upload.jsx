@@ -1,17 +1,12 @@
 import {
   AlertCircle,
   CheckCircle,
-  Download,
   Eye,
   FileText,
   Plus,
   RefreshCw,
   Upload as UploadIcon,
-  X,
-  Edit3,
-  Save,
-  Trash2,
-  Table,
+  X
 } from "lucide-react";
 import React, { useCallback, useState, useEffect } from "react";
 import { uploadFile, getRequest } from "../utils/httpClient";
@@ -90,9 +85,10 @@ export const Upload = () => {
   };
 
   const handlePreviewClick = async (file) => {
-    let response = await getRequest(`/user/file/extract/${file.id}/`);
-    const filename = file.file.split('/').pop().split('?')[0].split('#')[0];
-    setPreviewData({...response, file_name: filename});
+    let response = await getRequest(`/user/file/preview/${file.id}/`);
+    const filename = response.file.file.split('/').pop().split('?')[0].split('#')[0];
+    const content = {rows: response.preview, file_name: filename}
+    setPreviewData(content);
     setIsModalOpen(true);
   };
 
@@ -327,11 +323,11 @@ export const Upload = () => {
         //   )
         // );
       } finally {
-        // setUploadingFiles((prev) => {
-        //   const newSet = new Set(prev);
-        //   newSet.delete(fileId);
-        //   return newSet;
-        // });
+        setUploadingFiles((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(fileId);
+          return newSet;
+        });
       }
     }
   };
@@ -612,7 +608,7 @@ export const Upload = () => {
                     </div>
                   </div>
 
-                  {file.errors.length > 0 && (
+                  {/* {file.errors.length > 0 && (
                     <div className="mt-3 p-3 bg-red-50 rounded-lg">
                       <div className="flex items-start space-x-2">
                         <AlertCircle className="w-4 h-4 text-red-500 mt-0.5" />
@@ -628,7 +624,7 @@ export const Upload = () => {
                         </div>
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                   <div className="mt-4 flex items-center space-x-3">
                     {file.status === "uploading" && (
