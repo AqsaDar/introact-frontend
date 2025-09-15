@@ -1,0 +1,343 @@
+// EditableCompanyTable.jsx
+import React, { useState, useMemo, useEffect } from "react";
+
+/** generate 5000 rows */
+const generateData = () => {
+  const base = [
+    {
+      company: "AlphaTech",
+      website: "https://alphatech.com",
+      industry: "Software",
+      revenue: 120,
+      employees: 500,
+      location: "NY, USA",
+      contact: "John Doe",
+      email: "john@alpha.com",
+      phone: "+1-202-555-01",
+      notes: "Recently expanded",
+      attachment: "deck_alphatech.pdf",
+    },
+    {
+      company: "BioHealth Inc.",
+      website: "https://biohealth.com",
+      industry: "Healthcare",
+      revenue: 85,
+      employees: 300,
+      location: "Boston, USA",
+      contact: "Alice Smith",
+      email: "alice@biohealth.com",
+      phone: "+1-202-555-02",
+      notes: "Filed 3 new patents",
+      attachment: "biohealth_model.xlsx",
+    },
+    {
+      company: "GreenEnergy Ltd.",
+      website: "https://greenenergy.com",
+      industry: "Energy",
+      revenue: 200,
+      employees: 1200,
+      location: "Berlin, Germany",
+      contact: "Robert Green",
+      email: "robert@green.com",
+      phone: "+49-30-555-12",
+      notes: "Partnered with local gov",
+      attachment: "greenenergy_investor.pdf",
+    },
+    {
+      company: "FinServe Corp.",
+      website: "https://finserve.com",
+      industry: "Finance",
+      revenue: 450,
+      employees: 2000,
+      location: "London, UK",
+      contact: "Mary Johnson",
+      email: "mary@finserve.com",
+      phone: "+44-20-555-67",
+      notes: "Strong profit growth",
+      attachment: "finserve_overview.pptx",
+    },
+    {
+      company: "EduNext",
+      website: "https://edunext.com",
+      industry: "Education",
+      revenue: 60,
+      employees: 150,
+      location: "Toronto, Canada",
+      contact: "David Lee",
+      email: "david@edunext.com",
+      phone: "+1-416-555-43",
+      notes: "Launched new platform",
+      attachment: "edunext_case_study.pdf",
+    },
+  ];
+
+  const rows = [];
+  for (let i = 0; i < 500; i++) {
+    const template = base[i % base.length];
+    rows.push({
+      ...template,
+      company: `${template.company} ${i + 1}`,
+    });
+  }
+  return rows;
+};
+
+const columns = [
+  { key: "company_name", label: "Company Name", type: "text" },
+  { key: "website", label: "Website", type: "url" },
+  { key: "industry", label: "Industry", type: "text" },
+  { key: "revenue", label: "Revenue (USD M)", type: "number" },
+  { key: "employees", label: "Employees", type: "number" },
+  { key: "hq_location", label: "HQ Location", type: "text" },
+  { key: "contact_person", label: "Contact Person", type: "text" },
+  { key: "email", label: "Email", type: "email" },
+  { key: "phone", label: "Phone", type: "tel" },
+  { key: "notes", label: "Notes", type: "text" },
+  { key: "attachment", label: "Attachment Link", type: "text" },
+];
+
+export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
+  // Get data from content prop or fallback to generated data
+  const getInitialData = () => {
+    if (content?.rows && Array.isArray(content.rows) && content.rows.length > 0) {
+      return content.rows;
+    }
+    return generateData();
+  };
+
+  const [data, setData] = useState(() => getInitialData());
+  const [editedData, setEditedData] = useState(() => getInitialData());
+
+  // Update data when content prop changes
+  useEffect(() => {
+    const newData = getInitialData();
+    setData(newData);
+    setEditedData(newData.map((r) => ({ ...r })));
+    setCurrentPage(0); // Reset to first page when data changes
+  }, [content]);
+
+  const rowsPerPage = 500; // 👈 reduced to 500
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const offset = currentPage * rowsPerPage;
+  const currentRows = editedData?.slice(offset, offset + rowsPerPage) || [];
+  const pageCount = Math.ceil((editedData?.length || 0) / rowsPerPage);
+
+  // Get issues from content
+  const issues = content?.issues || {};
+  const issuesExist = content?.issues_exist || false;
+  const processedRows = content?.processed_rows || 0;
+  const capNote = content?.cap_note || "";
+
+  const handleChange = (indexOnPage, field, value) => {
+    const globalIndex = currentPage * rowsPerPage + indexOnPage;
+    setEditedData((prev) => {
+      const copy = [...(prev || [])];
+      copy[globalIndex] = { ...copy[globalIndex], [field]: value };
+      return copy;
+    });
+  };
+
+  const handleSave = () => {
+    setData(editedData?.map((r) => ({ ...r })) || []);
+    onClose();
+  };
+
+  const handleCancel = () => {
+    setEditedData(data?.map((r) => ({ ...r })) || []);
+    onClose();
+  };
+
+  // Check if a field is empty or has issues
+  const isFieldEmpty = (row, field) => {
+    const value = row[field];
+    return !value || value.toString().trim() === "";
+  };
+
+  // Get field-specific issues
+  const getFieldIssues = (field) => {
+    if (issues[field]) {
+      return issues[field];
+    }
+    return null;
+  };
+
+  // Don't render anything if modal is not open
+  if (!isOpen) {
+    return null;
+  }
+
+  // Show loading state if no data
+  if (!editedData || editedData.length === 0) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Company Table</h2>
+            <button
+              onClick={handleCancel}
+              className="text-gray-500 hover:text-gray-700"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Company Table</h2>
+          <button
+            onClick={handleCancel}
+            className="text-gray-500 hover:text-gray-700"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Issues Summary - Show at top if issues exist */}
+        {issuesExist && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <svg className="w-5 h-5 text-red-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-red-800 mb-2">Data Quality Issues Found</h3>
+                <div className="space-y-1">
+                  {Object.entries(issues).map(([field, issue]) => (
+                    <div key={field} className="text-sm text-red-700">
+                      <span className="font-medium capitalize">{field.replace('_', ' ')}:</span> {issue}
+                    </div>
+                  ))}
+                </div>
+                {capNote && (
+                  <div className="mt-2 text-xs text-red-600">
+                    {capNote}
+                  </div>
+                )}
+                <div className="mt-2 text-xs text-red-600">
+                  Processed {processedRows} rows
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Table */}
+        <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border rounded-md">
+          <table className="min-w-full border-collapse text-sm">
+            <thead className="bg-gray-50 sticky top-0 text-xs uppercase">
+              <tr>
+                {columns.map((c) => (
+                  <th
+                    key={c.key}
+                    className="border border-gray-200 p-2 text-left font-medium text-gray-600"
+                  >
+                    {c.label}
+                    {getFieldIssues(c.key) && (
+                      <span className="ml-1 text-red-500" title={getFieldIssues(c.key)}>
+                        ⚠️
+                      </span>
+                    )}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            <tbody>
+              {currentRows.map((row, idx) => (
+                <tr key={offset + idx} className="hover:bg-gray-50">
+                  {columns.map((c) => {
+                    const isEmpty = isFieldEmpty(row, c.key);
+                    const hasFieldIssue = getFieldIssues(c.key);
+                    
+                    return (
+                      <td
+                        key={c.key}
+                        className="border border-gray-200 p-2 align-top"
+                      >
+                        <input
+                          type={c.type}
+                          value={row[c.key] ?? ""}
+                          onChange={(e) =>
+                            handleChange(idx, c.key, e.target.value)
+                          }
+                          className={`w-full border px-2 py-1 rounded text-sm focus:ring focus:ring-blue-200 ${
+                            isEmpty || hasFieldIssue
+                              ? "border-red-300 bg-red-50 focus:ring-red-200"
+                              : "border-gray-300"
+                          }`}
+                          placeholder={isEmpty ? "Required field" : ""}
+                        />
+                        {isEmpty && (
+                          <div className="text-xs text-red-500 mt-1">
+                            Empty field
+                          </div>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Simple Pagination: one page at a time */}
+        <div className="mt-4 flex justify-center items-center gap-3">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+            disabled={currentPage === 0}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            ← Prev
+          </button>
+          <span className="px-3 py-1 border rounded bg-blue-600 text-white">
+            {currentPage + 1} / {pageCount}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((p) => Math.min(pageCount - 1, p + 1))
+            }
+            disabled={currentPage === pageCount - 1}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Next →
+          </button>
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-3 mt-4">
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            Save
+          </button>
+          <button
+            onClick={handleCancel}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Upload, 
@@ -10,19 +10,30 @@ import {
   Zap,
   Settings,
   User,
-  ChevronRight
+  ChevronRight,
+  LogOut,
+  Kanban
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, description: 'Overview & Analytics' },
   { name: 'Upload', href: '/upload', icon: Upload, description: 'File Management' },
   { name: 'Pipeline', href: '/pipeline', icon: GitBranch, description: 'Lead Tracking' },
+  { name: 'Kanban', href: '/kanban', icon: Kanban, description: 'Task Management' },
   { name: 'Reports', href: '/reports', icon: BarChart3, description: 'Performance Data' },
 ];
 
 function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -39,7 +50,7 @@ function Layout({ children }) {
                 <X className="w-6 h-6 text-white" />
               </button>
             </div>
-            <SidebarContent />
+            <SidebarContent onLogout={handleLogout} />
           </div>
         </div>
       )}
@@ -47,7 +58,7 @@ function Layout({ children }) {
       {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:flex-shrink-0">
         <div className="flex flex-col w-72">
-          <SidebarContent />
+          <SidebarContent onLogout={handleLogout} />
         </div>
       </div>
 
@@ -95,8 +106,9 @@ function Layout({ children }) {
   );
 }
 
-function SidebarContent() {
+function SidebarContent({ onLogout }) {
   const location = useLocation();
+  const { user } = useAuth();
 
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-white/95 backdrop-blur-xl border-r border-gray-200/50 shadow-xl">
@@ -172,14 +184,27 @@ function SidebarContent() {
             <User className="w-5 h-5 text-white" />
           </div>
           <div className="ml-3 flex-1">
-            <p className="text-sm font-semibold text-gray-900">Admin User</p>
-            <p className="text-xs text-gray-500">admin@aioutreach.com</p>
+            <p className="text-sm font-semibold text-gray-900">
+              {user?.name || user?.email || 'User'}
+            </p>
+            <p className="text-xs text-gray-500">
+              {user?.email || 'user@example.com'}
+            </p>
           </div>
           <Settings className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
         </div>
+        
+        {/* Logout Button */}
+        <button
+          onClick={onLogout}
+          className="w-full mt-3 flex items-center justify-center px-4 py-3 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200 hover:scale-105"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Sign Out
+        </button>
       </div>
     </div>
   );
 }
 
-export default Layout; 
+export default Layout;

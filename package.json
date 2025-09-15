@@ -2,6 +2,7 @@
   "name": "ai-outreach-prototype",
   "private": true,
   "version": "0.0.0",
+  "node": "^20.19.0 || >=22.12.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,10 +12,13 @@
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.11",
+    "axios": "^1.11.0",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-paginate": "^8.3.0",
     "react-router-dom": "^7.6.3",
+    "react-window": "^2.1.0",
     "recharts": "^3.0.2"
   },
   "devDependencies": {

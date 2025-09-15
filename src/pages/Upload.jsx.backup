@@ -11,7 +11,6 @@ import {
   Edit3,
   Save,
   Trash2,
-  Table,
 } from "lucide-react";
 import React, { useCallback, useState, useEffect } from "react";
 import { uploadFile, getRequest } from "../utils/httpClient";
@@ -31,9 +30,6 @@ export const Upload = () => {
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [editingCard, setEditingCard] = useState(null);
   const [editingData, setEditingData] = useState({});
-  
-  // Modal state management
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch files from API on component mount
   useEffect(() => {
@@ -79,7 +75,6 @@ export const Upload = () => {
     try {
       setIsLoadingPreview(true);
       const response = await getRequest(`/user/file/preview/${fileId}/`);
-      console.log("Preview data received:", response); // Debug log
       setPreviewData(response);
     } catch (err) {
       console.error("Error fetching preview data:", err);
@@ -90,10 +85,9 @@ export const Upload = () => {
   };
 
   const handlePreviewClick = async (file) => {
-    let response = await getRequest(`/user/file/extract/${file.id}/`);
-    const filename = file.file.split('/').pop().split('?')[0].split('#')[0];
-    setPreviewData({...response, file_name: filename});
-    setIsModalOpen(true);
+    setSelectedFile(file);
+    setShowPreview(true);
+    await fetchPreviewData(file.id);
   };
 
   const handleEditCard = (company) => {
@@ -161,57 +155,6 @@ export const Upload = () => {
     }));
   };
 
-  // Modal control functions
-  const openModal = () => {
-    console.log("Opening modal with previewData:", previewData); // Debug log
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  // Create mock data for testing if previewData is not available
-  const getModalContent = () => {
-    if (previewData && previewData.preview && Array.isArray(previewData.preview)) {
-      return {
-        rows: previewData.preview
-      };
-    }
-    
-    // Fallback to mock data for testing
-    return {
-      rows: [
-        {
-          company: "Test Company 1",
-          website: "https://test1.com",
-          industry: "Technology",
-          revenue: 100,
-          employees: 50,
-          location: "San Francisco, CA",
-          contact: "John Smith",
-          email: "john@test1.com",
-          phone: "+1-555-0123",
-          notes: "Test company 1",
-          attachment: "test1.pdf",
-        },
-        {
-          company: "Test Company 2",
-          website: "https://test2.com",
-          industry: "Healthcare",
-          revenue: 200,
-          employees: 100,
-          location: "New York, NY",
-          contact: "Jane Doe",
-          email: "jane@test2.com",
-          phone: "+1-555-0124",
-          notes: "Test company 2",
-          attachment: "test2.pdf",
-        }
-      ]
-    };
-  };
-
   const handleDrag = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -274,64 +217,63 @@ export const Upload = () => {
             },
           }
         );
-        setPreviewData({...response, file_name: file.name});
-        setIsModalOpen(true);
+
         // Update file with API response
-        // setFiles((prev) =>
-        //   prev.map((f) =>
-        //     f.id === fileId
-        //       ? {
-        //           ...f,
-        //           status: "processing",
-        //           companiesCount:
-        //             response.companies_count ||
-        //             Math.floor(Math.random() * 200) + 50,
-        //           errors: response.errors || [],
-        //         }
-        //       : f
-        //   )
-        // );
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === fileId
+              ? {
+                  ...f,
+                  status: "processing",
+                  companiesCount:
+                    response.companies_count ||
+                    Math.floor(Math.random() * 200) + 50,
+                  errors: response.errors || [],
+                }
+              : f
+          )
+        );
 
         // Simulate processing completion after API upload
-        // setTimeout(() => {
-        //   setFiles((prev) =>
-        //     prev.map((f) =>
-        //       f.id === fileId
-        //         ? {
-        //             ...f,
-        //             status: "validated",
-        //             validCount:
-        //               f.companiesCount - Math.floor(Math.random() * 5),
-        //             errors:
-        //               f.errors.length > 0
-        //                 ? f.errors
-        //                 : ["Missing phone number for 2 companies"],
-        //           }
-        //         : f
-        //     )
-        //   );
-        // }, 2000);
+        setTimeout(() => {
+          setFiles((prev) =>
+            prev.map((f) =>
+              f.id === fileId
+                ? {
+                    ...f,
+                    status: "validated",
+                    validCount:
+                      f.companiesCount - Math.floor(Math.random() * 5),
+                    errors:
+                      f.errors.length > 0
+                        ? f.errors
+                        : ["Missing phone number for 2 companies"],
+                  }
+                : f
+            )
+          );
+        }, 2000);
       } catch (error) {
         console.error("Upload error:", error);
 
         // Update file with error status
-        // setFiles((prev) =>
-        //   prev.map((f) =>
-        //     f.id === fileId
-        //       ? {
-        //           ...f,
-        //           status: "error",
-        //           errors: [error.message || "Upload failed. Please try again."],
-        //         }
-        //       : f
-        //   )
-        // );
+        setFiles((prev) =>
+          prev.map((f) =>
+            f.id === fileId
+              ? {
+                  ...f,
+                  status: "error",
+                  errors: [error.message || "Upload failed. Please try again."],
+                }
+              : f
+          )
+        );
       } finally {
-        // setUploadingFiles((prev) => {
-        //   const newSet = new Set(prev);
-        //   newSet.delete(fileId);
-        //   return newSet;
-        // });
+        setUploadingFiles((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(fileId);
+          return newSet;
+        });
       }
     }
   };
@@ -511,14 +453,7 @@ export const Upload = () => {
         </div>
       </div>
 
-      {/* Modal Component - now controlled by Upload component */}
-      <EditableUploadedModal 
-        isOpen={isModalOpen} 
-        onClose={closeModal}
-        onOpen={openModal}
-        content={previewData}
-      />
-
+      <EditableUploadedModal />
       {/* Files List */}
       {files.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
