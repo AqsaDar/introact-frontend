@@ -94,7 +94,7 @@ const columns = [
   { key: "email", label: "Email", type: "email" },
   { key: "phone", label: "Phone", type: "tel" },
   { key: "notes", label: "Notes", type: "text" },
-  { key: "attachment", label: "Attachment Link", type: "text" },
+  { key: "attachment_link", label: "Attachment Link", type: "text" },
 ];
 
 export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
@@ -148,7 +148,7 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
 
       // Prepare the payload
       const payload = {
-        filename: content?.filename || "edited_data.xlsx", // Use filename from content or default
+        filename: content?.file_name || "edited_data.xlsx", // Use filename from content or default
         rows: editedData || []
       };
       // Call the save API
@@ -158,7 +158,7 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
       setData(editedData?.map((r) => ({ ...r })) || []);
       
       // Close modal on successful save
-      onClose();
+      onClose(true);
       
     } catch (error) {
       console.error("Error saving data:", error);

@@ -163,7 +163,10 @@ export const Upload = () => {
     setIsModalOpen(true);
   };
 
-  const closeModal = () => {
+  const closeModal = (saveMode) => {
+    if(saveMode) {
+      fetchFiles();
+    }
     setIsModalOpen(false);
   };
 
@@ -251,7 +254,7 @@ export const Upload = () => {
         errors: [],
       };
 
-      setFiles((prev) => [newFile, ...prev]);
+      // setFiles((prev) => [newFile, ...prev]);
       setUploadingFiles((prev) => new Set([...prev, fileId]));
 
       try {
