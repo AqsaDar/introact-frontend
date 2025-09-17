@@ -102,7 +102,11 @@ const columns = [
 export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
   // Get data from content prop or fallback to generated data
   const getInitialData = () => {
-    if (content?.rows && Array.isArray(content.rows) && content.rows.length > 0) {
+    if (
+      content?.rows &&
+      Array.isArray(content.rows) &&
+      content.rows.length > 0
+    ) {
       return content.rows;
     }
     return generateData();
@@ -151,20 +155,21 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
       // Prepare the payload
       const payload = {
         filename: content?.file_name || "edited_data.xlsx", // Use filename from content or default
-        rows: editedData || []
+        rows: editedData || [],
       };
       // Call the save API
       const response = await postRequest("/user/file/upload/", payload);
 
       // Update local data with the saved data
       setData(editedData?.map((r) => ({ ...r })) || []);
-      
+
       // Close modal on successful save
       onClose(true);
-      
     } catch (error) {
       console.error("Error saving data:", error);
-      setSaveError(error.message || "Failed to save changes. Please try again.");
+      setSaveError(
+        error.message || "Failed to save changes. Please try again."
+      );
     } finally {
       setIsSaving(false);
     }
@@ -188,6 +193,11 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
       return issues[field];
     }
     return null;
+  };
+
+  const normalizeUrl = (url) => {
+    if (!url) return "";
+    return /^https?:\/\//i.test(url) ? url : `https://${url}`;
   };
 
   // Don't render anything if modal is not open
@@ -241,8 +251,16 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
         {saveError && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center">
-              <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <svg
+                className="w-5 h-5 text-red-500 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
               </svg>
               <p className="text-red-700">{saveError}</p>
             </div>
@@ -254,23 +272,34 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
-                <svg className="w-5 h-5 text-red-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                <svg
+                  className="w-5 h-5 text-red-500 mt-0.5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-sm font-medium text-red-800 mb-2">Data Quality Issues Found</h3>
+                <h3 className="text-sm font-medium text-red-800 mb-2">
+                  Data Quality Issues Found
+                </h3>
                 <div className="space-y-1">
                   {Object.entries(issues).map(([field, issue]) => (
                     <div key={field} className="text-sm text-red-700">
-                      <span className="font-medium capitalize">{field.replace('_', ' ')}:</span> {issue}
+                      <span className="font-medium capitalize">
+                        {field.replace("_", " ")}:
+                      </span>{" "}
+                      {issue}
                     </div>
                   ))}
                 </div>
                 {capNote && (
-                  <div className="mt-2 text-xs text-red-600">
-                    {capNote}
-                  </div>
+                  <div className="mt-2 text-xs text-red-600">{capNote}</div>
                 )}
                 <div className="mt-2 text-xs text-red-600">
                   Processed {processedRows} rows
@@ -292,7 +321,10 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
                   >
                     {c.label}
                     {getFieldIssues(c.key) && (
-                      <span className="ml-1 text-red-500" title={getFieldIssues(c.key)}>
+                      <span
+                        className="ml-1 text-red-500"
+                        title={getFieldIssues(c.key)}
+                      >
                         ⚠️
                       </span>
                     )}
@@ -307,25 +339,63 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
                   {columns.map((c) => {
                     const isEmpty = isFieldEmpty(row, c.key);
                     const hasFieldIssue = getFieldIssues(c.key);
-                    
+                    const isWebsite = c.key === "website";
+
                     return (
                       <td
                         key={c.key}
                         className="border border-gray-200 p-2 align-top"
                       >
-                        <input
-                          type={c.type}
-                          value={row[c.key] ?? ""}
-                          onChange={(e) =>
-                            handleChange(idx, c.key, e.target.value)
-                          }
-                          className={`w-full border px-2 py-1 rounded text-sm focus:ring focus:ring-blue-200 ${
-                            isEmpty || hasFieldIssue
-                              ? "border-red-300 bg-red-50 focus:ring-red-200"
-                              : "border-gray-300"
-                          }`}
-                          placeholder={isEmpty ? "Required field" : ""}
-                        />
+                        {isWebsite ? (
+                          <div className="relative">
+                            <input
+                              type={c.type}
+                              value={row[c.key] ?? ""}
+                              onChange={(e) =>
+                                handleChange(idx, c.key, e.target.value)
+                              }
+                              title={row[c.key] ?? ""}
+                              className={`w-full border pr-9 px-2 py-1 rounded text-sm focus:ring focus:ring-blue-200 ${
+                                isEmpty || hasFieldIssue
+                                  ? "border-red-300 bg-red-50 focus:ring-red-200"
+                                  : "border-gray-300"
+                              }`}
+                              placeholder={isEmpty ? "Required field" : ""}
+                            />
+                            {row[c.key] && (
+                              <a
+                                href={normalizeUrl(row[c.key])}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={normalizeUrl(row[c.key])}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 hover:text-blue-700"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                  className="w-4 h-4"
+                                >
+                                  <path d="M13.172 7l-1.414 1.414 2.121 2.121-4.95 4.95a3 3 0 01-4.243-4.243l3.536-3.536-1.414-1.414-3.536 3.536a5 5 0 107.071 7.071l4.95-4.95 2.121 2.121L17 13.172V7h-6.172z" />
+                                </svg>
+                              </a>
+                            )}
+                          </div>
+                        ) : (
+                          <input
+                            type={c.type}
+                            value={row[c.key] ?? ""}
+                            onChange={(e) =>
+                              handleChange(idx, c.key, e.target.value)
+                            }
+                            className={`w-full border px-2 py-1 rounded text-sm focus:ring focus:ring-blue-200 ${
+                              isEmpty || hasFieldIssue
+                                ? "border-red-300 bg-red-50 focus:ring-red-200"
+                                : "border-gray-300"
+                            }`}
+                            placeholder={isEmpty ? "Required field" : ""}
+                          />
+                        )}
                         {isEmpty && (
                           <div className="text-xs text-red-500 mt-1">
                             Empty field
@@ -372,9 +442,24 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
           >
             {isSaving ? (
               <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Saving...
               </>
@@ -393,4 +478,4 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
       </div>
     </div>
   );
-}
+};
