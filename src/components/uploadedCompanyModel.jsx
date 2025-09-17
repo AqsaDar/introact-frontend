@@ -95,8 +95,8 @@ const columns = [
   { key: "contact_person", label: "Contact Person", type: "text" },
   { key: "email", label: "Email", type: "email" },
   { key: "phone", label: "Phone", type: "tel" },
-  { key: "notes", label: "Notes", type: "text" },
-  { key: "attachment_link", label: "Attachment Link", type: "text" },
+  // { key: "notes", label: "Notes", type: "text" },
+  // { key: "attachment_link", label: "Attachment Link", type: "text" },
 ];
 
 export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
