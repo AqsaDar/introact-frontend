@@ -11,21 +11,16 @@ import {
 import React, { useCallback, useState, useEffect } from "react";
 import { uploadFile, getRequest } from "../utils/httpClient";
 import { EditableUploadedModal } from "../components/uploadedCompanyModel";
-// Comment out the dummy data import
-// import { uploadedFiles } from '../data/mockData';
+import Loader from "../components/Loader";
+import { messages } from "../utils/data";
 
 export const Upload = () => {
   const [files, setFiles] = useState([]);
   const [dragActive, setDragActive] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [showPreview, setShowPreview] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState(new Set());
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [previewData, setPreviewData] = useState(null);
-  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-  const [editingCard, setEditingCard] = useState(null);
-  const [editingData, setEditingData] = useState({});
   
   // Modal state management
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,7 +32,7 @@ export const Upload = () => {
 
   const fetchFiles = async () => {
     try {
-      setIsLoading(true);
+      setLoading(true);
       setError("");
       const response = await getRequest("/user/file/list/");
 
@@ -66,95 +61,18 @@ export const Upload = () => {
       // Fallback to empty array on error
       setFiles([]);
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchPreviewData = async (fileId) => {
-    try {
-      setIsLoadingPreview(true);
-      const response = await getRequest(`/user/file/preview/${fileId}/`);
-      console.log("Preview data received:", response); // Debug log
-      setPreviewData(response);
-    } catch (err) {
-      console.error("Error fetching preview data:", err);
-      setError("Failed to load preview data. Please try again.");
-    } finally {
-      setIsLoadingPreview(false);
+      setLoading(false);
     }
   };
 
   const handlePreviewClick = async (file) => {
+    setLoading(true);
     let response = await getRequest(`/user/file/preview/${file.id}/`);
     const filename = response.file.file.split('/').pop().split('?')[0].split('#')[0];
     const content = {rows: response.preview, file_name: filename}
     setPreviewData(content);
     setIsModalOpen(true);
-  };
-
-  const handleEditCard = (company) => {
-    setEditingCard(company.id);
-    setEditingData({
-      company_name: company.company_name,
-      website: company.website,
-      industry: company.industry,
-      revenue: company.revenue,
-      employees: company.employees,
-      hq_location: company.hq_location,
-      contact_person: company.contact_person,
-      email: company.email,
-      phone: company.phone,
-      notes: company.notes,
-    });
-  };
-
-  const handleSaveCard = async (companyId) => {
-    try {
-      // Here you would call the API to save the changes
-      // await putRequest(`/user/company/${companyId}/`, editingData);
-
-      // Update local state
-      setPreviewData((prev) => ({
-        ...prev,
-        preview: prev.preview.map((company) =>
-          company.id === companyId ? { ...company, ...editingData } : company
-        ),
-      }));
-
-      setEditingCard(null);
-      setEditingData({});
-    } catch (err) {
-      console.error("Error saving company data:", err);
-      setError("Failed to save changes. Please try again.");
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingCard(null);
-    setEditingData({});
-  };
-
-  const handleDeleteCard = async (companyId) => {
-    try {
-      // Here you would call the API to delete the company
-      // await deleteRequest(`/user/company/${companyId}/`);
-
-      // Update local state
-      setPreviewData((prev) => ({
-        ...prev,
-        preview: prev.preview.filter((company) => company.id !== companyId),
-      }));
-    } catch (err) {
-      console.error("Error deleting company:", err);
-      setError("Failed to delete company. Please try again.");
-    }
-  };
-
-  const handleInputChange = (field, value) => {
-    setEditingData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setLoading(false);
   };
 
   // Modal control functions
@@ -236,6 +154,32 @@ export const Upload = () => {
     if (e.target.files && e.target.files[0]) {
       handleFiles(Array.from(e.target.files));
     }
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 1. Check file size
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File size exceeds 10 MB");
+      e.target.value = ""; // reset input
+      return;
+    }
+
+    // 2. Parse CSV and validate row count
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        if (results.data.length > 5000) {
+          alert("File contains more than 5000 rows");
+          e.target.value = ""; // reset input
+          return;
+        }
+        console.log("File valid, rows:", results.data.length);
+      },
+      error: () => {
+        alert("Failed to parse file");
+      },
+    });
   }, []);
 
   const handleFiles = async (fileList) => {
@@ -258,6 +202,7 @@ export const Upload = () => {
       setUploadingFiles((prev) => new Set([...prev, fileId]));
 
       try {
+        setLoading(true);
         // Upload file to API
         const response = await uploadFile(
           "/user/file/read/",
@@ -311,6 +256,7 @@ export const Upload = () => {
         //   );
         // }, 2000);
       } catch (error) {
+
         console.error("Upload error:", error);
 
         // Update file with error status
@@ -326,6 +272,7 @@ export const Upload = () => {
         //   )
         // );
       } finally {
+        setLoading(false);
         setUploadingFiles((prev) => {
           const newSet = new Set(prev);
           newSet.delete(fileId);
@@ -431,22 +378,9 @@ export const Upload = () => {
     }
   };
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-center min-h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading files...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Loader isVisible={loading} messages={messages} />
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Upload Files</h1>

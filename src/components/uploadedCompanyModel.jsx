@@ -1,6 +1,8 @@
 // EditableCompanyTable.jsx
 import React, { useState, useMemo, useEffect } from "react";
 import { postRequest } from "../utils/httpClient";
+import Loader from "./Loader";
+import { messages } from "../utils/data";
 
 /** generate 5000 rows */
 const generateData = () => {
@@ -197,6 +199,7 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
   if (!editedData || editedData.length === 0) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <Loader isVisible={isSaving} messages={messages} />
         <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Company Table</h2>
