@@ -13,6 +13,7 @@ import { uploadFile, getRequest } from "../utils/httpClient";
 import { EditableUploadedModal } from "../components/uploadedCompanyModel";
 import Loader from "../components/Loader";
 import { messages } from "../utils/data";
+import PreviewOrEditCompany from "../components/PreviewOrEditCompany";
 
 export const Upload = () => {
   const [files, setFiles] = useState([]);
@@ -21,7 +22,7 @@ export const Upload = () => {
   const [uploadingFiles, setUploadingFiles] = useState(new Set());
   const [error, setError] = useState("");
   const [previewData, setPreviewData] = useState(null);
-  
+  const [preview, setPreview] = useState(false);
   // Modal state management
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -71,7 +72,8 @@ export const Upload = () => {
     const filename = response.file.file.split('/').pop().split('?')[0].split('#')[0];
     const content = {rows: response.preview, file_name: filename}
     setPreviewData(content);
-    setIsModalOpen(true);
+    // setIsModalOpen(true);
+    setPreview(true);
     setLoading(false);
   };
 
@@ -379,234 +381,241 @@ export const Upload = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <Loader isVisible={loading} messages={messages} />
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Upload Files</h1>
-        <p className="mt-2 text-gray-600">
-          Upload Excel files containing company leads for AI validation
-        </p>
-      </div>
+    <div>
+      {
+        preview? (
+          <PreviewOrEditCompany content={previewData} onCancel={() => setPreview(false)} />
+        ):
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" >
+        <Loader isVisible={loading} messages={messages} />
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Upload Files</h1>
+          <p className="mt-2 text-gray-600">
+            Upload Excel files containing company leads for AI validation
+          </p>
+        </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
-            <p className="text-red-700">{error}</p>
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
+              <p className="text-red-700">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Upload Area */}
+        <div className="mb-8">
+          <div
+            className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
+              dragActive
+                ? "border-blue-400 bg-blue-50"
+                : "border-gray-300 hover:border-gray-400"
+            }`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            <input
+              type="file"
+              multiple
+              accept=".xlsx,.xls,.csv"
+              onChange={handleChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              disabled={uploadingFiles.size > 0}
+            />
+
+            <div className="space-y-4">
+              <div className="mx-auto w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+                <UploadIcon className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {uploadingFiles.size > 0
+                    ? "Uploading files..."
+                    : "Drop files here or click to upload"}
+                </h3>
+                <p className="text-gray-500">
+                  Support for Excel files (.xlsx, .xls) and CSV files
+                </p>
+              </div>
+              <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
+                <span>Maximum file size: 10MB</span>
+                <span>•</span>
+                <span>Multiple files supported</span>
+              </div>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Upload Area */}
-      <div className="mb-8">
-        <div
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-            dragActive
-              ? "border-blue-400 bg-blue-50"
-              : "border-gray-300 hover:border-gray-400"
-          }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-        >
-          <input
-            type="file"
-            multiple
-            accept=".xlsx,.xls,.csv"
-            onChange={handleChange}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            disabled={uploadingFiles.size > 0}
-          />
+        {/* Modal Component - now controlled by Upload component */}
+        <EditableUploadedModal 
+          isOpen={isModalOpen} 
+          onClose={closeModal}
+          onOpen={openModal}
+          content={previewData}
+        />
 
-          <div className="space-y-4">
-            <div className="mx-auto w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-              <UploadIcon className="w-8 h-8 text-white" />
-            </div>
-            <div>
+        {/* Files List */}
+        {files.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">
-                {uploadingFiles.size > 0
-                  ? "Uploading files..."
-                  : "Drop files here or click to upload"}
+                Uploaded Files
               </h3>
-              <p className="text-gray-500">
-                Support for Excel files (.xlsx, .xls) and CSV files
+              <p className="text-sm text-gray-500">
+                Manage and validate your uploaded files
               </p>
             </div>
-            <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
-              <span>Maximum file size: 10MB</span>
-              <span>•</span>
-              <span>Multiple files supported</span>
+
+            <div className="divide-y divide-gray-200">
+              {files.map((file) => {
+                const StatusIcon = getStatusIcon(file.status);
+                const isUploading = uploadingFiles.has(file.id);
+
+                return (
+                  <div
+                    key={file.id}
+                    className="p-6 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="p-2 bg-gray-100 rounded-lg">
+                          <FileText className="w-6 h-6 text-gray-600" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-900">
+                            {file.name}
+                          </h4>
+                          <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
+                            <span>{file.size}</span>
+                            <span>•</span>
+                            <span>Uploaded {file.uploadDate}</span>
+                            {file.companiesCount > 0 && (
+                              <>
+                                <span>•</span>
+                                <span>{file.companiesCount} companies</span>
+                              </>
+                            )}
+                            {file.validCount && (
+                              <>
+                                <span>•</span>
+                                <span className="text-green-600">
+                                  {file.validCount} valid
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                            file.status
+                          )}`}
+                        >
+                          <StatusIcon
+                            className={`w-3 h-3 mr-1 ${
+                              file.status === "processing" ||
+                              file.status === "uploading"
+                                ? "animate-spin"
+                                : ""
+                            }`}
+                          />
+                          {file.status === "validated" && "✔️ Valid"}
+                          {file.status === "processing" && "Processing..."}
+                          {file.status === "uploading" && "Uploading..."}
+                          {file.status === "error" && "❌ Error"}
+                          {file.status === "added_to_pipeline" &&
+                            "✅ Added to Pipeline"}
+                        </div>
+
+                        <button
+                          onClick={() => handlePreviewClick(file)}
+                          className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                          disabled={isUploading}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          onClick={() => removeFile(file.id)}
+                          className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-gray-100"
+                          disabled={isUploading}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* {file.errors.length > 0 && (
+                      <div className="mt-3 p-3 bg-red-50 rounded-lg">
+                        <div className="flex items-start space-x-2">
+                          <AlertCircle className="w-4 h-4 text-red-500 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-red-800">
+                              Issues Found:
+                            </p>
+                            <ul className="mt-1 text-sm text-red-700 list-disc list-inside">
+                              {file.errors.map((error, index) => (
+                                <li key={index}>{error}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )} */}
+
+                    <div className="mt-4 flex items-center space-x-3">
+                      {file.status === "uploading" && (
+                        <div className="text-sm text-blue-600">
+                          Uploading to server...
+                        </div>
+                      )}
+
+                      {file.status === "processing" && (
+                        <div className="text-sm text-gray-500">
+                          AI validation in progress...
+                        </div>
+                      )}
+
+                      {(file.status === "validated" ||
+                        file.status === "error") && (
+                        <button
+                          onClick={() => validateFile(file.id)}
+                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                          disabled={isUploading}
+                        >
+                          <RefreshCw className="w-4 h-4 mr-1" />
+                          Re-validate
+                        </button>
+                      )}
+
+                      {file.status === "validated" && (
+                        <button
+                          onClick={() => addToPipeline(file.id)}
+                          className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-sm font-medium rounded-md text-white transition-colors"
+                          disabled={isUploading}
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add to Pipeline
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        </div>
+        )}
+
+        
       </div>
-
-      {/* Modal Component - now controlled by Upload component */}
-      <EditableUploadedModal 
-        isOpen={isModalOpen} 
-        onClose={closeModal}
-        onOpen={openModal}
-        content={previewData}
-      />
-
-      {/* Files List */}
-      {files.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Uploaded Files
-            </h3>
-            <p className="text-sm text-gray-500">
-              Manage and validate your uploaded files
-            </p>
-          </div>
-
-          <div className="divide-y divide-gray-200">
-            {files.map((file) => {
-              const StatusIcon = getStatusIcon(file.status);
-              const isUploading = uploadingFiles.has(file.id);
-
-              return (
-                <div
-                  key={file.id}
-                  className="p-6 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="p-2 bg-gray-100 rounded-lg">
-                        <FileText className="w-6 h-6 text-gray-600" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">
-                          {file.name}
-                        </h4>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
-                          <span>{file.size}</span>
-                          <span>•</span>
-                          <span>Uploaded {file.uploadDate}</span>
-                          {file.companiesCount > 0 && (
-                            <>
-                              <span>•</span>
-                              <span>{file.companiesCount} companies</span>
-                            </>
-                          )}
-                          {file.validCount && (
-                            <>
-                              <span>•</span>
-                              <span className="text-green-600">
-                                {file.validCount} valid
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                          file.status
-                        )}`}
-                      >
-                        <StatusIcon
-                          className={`w-3 h-3 mr-1 ${
-                            file.status === "processing" ||
-                            file.status === "uploading"
-                              ? "animate-spin"
-                              : ""
-                          }`}
-                        />
-                        {file.status === "validated" && "✔️ Valid"}
-                        {file.status === "processing" && "Processing..."}
-                        {file.status === "uploading" && "Uploading..."}
-                        {file.status === "error" && "❌ Error"}
-                        {file.status === "added_to_pipeline" &&
-                          "✅ Added to Pipeline"}
-                      </div>
-
-                      <button
-                        onClick={() => handlePreviewClick(file)}
-                        className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-                        disabled={isUploading}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        onClick={() => removeFile(file.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-gray-100"
-                        disabled={isUploading}
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* {file.errors.length > 0 && (
-                    <div className="mt-3 p-3 bg-red-50 rounded-lg">
-                      <div className="flex items-start space-x-2">
-                        <AlertCircle className="w-4 h-4 text-red-500 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-medium text-red-800">
-                            Issues Found:
-                          </p>
-                          <ul className="mt-1 text-sm text-red-700 list-disc list-inside">
-                            {file.errors.map((error, index) => (
-                              <li key={index}>{error}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  )} */}
-
-                  <div className="mt-4 flex items-center space-x-3">
-                    {file.status === "uploading" && (
-                      <div className="text-sm text-blue-600">
-                        Uploading to server...
-                      </div>
-                    )}
-
-                    {file.status === "processing" && (
-                      <div className="text-sm text-gray-500">
-                        AI validation in progress...
-                      </div>
-                    )}
-
-                    {(file.status === "validated" ||
-                      file.status === "error") && (
-                      <button
-                        onClick={() => validateFile(file.id)}
-                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                        disabled={isUploading}
-                      >
-                        <RefreshCw className="w-4 h-4 mr-1" />
-                        Re-validate
-                      </button>
-                    )}
-
-                    {file.status === "validated" && (
-                      <button
-                        onClick={() => addToPipeline(file.id)}
-                        className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-sm font-medium rounded-md text-white transition-colors"
-                        disabled={isUploading}
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Add to Pipeline
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      
+      }
     </div>
   );
 };
