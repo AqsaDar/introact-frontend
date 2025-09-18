@@ -209,6 +209,7 @@ export const Upload = () => {
         const response = await uploadFile(
           "/user/file/read/",
           file,
+          "",
           {},
           {
             onUploadProgress: (progressEvent) => {

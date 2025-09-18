@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { postRequest } from "../utils/httpClient";
 import Loader from "./Loader";
-import { TempUploadModal } from "../../temp_upload_modal";
 
 // Fallback demo data
 const generateData = () => {
@@ -67,13 +66,9 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
       Array.isArray(content.rows) &&
       content.rows.length > 0
     ) {
-      return content.rows.map((row) => ({
+      return content.rows.map(row => ({
         ...row,
-        notes: Array.isArray(row.notes)
-          ? row.notes
-          : row.notes
-          ? [row.notes]
-          : [],
+        notes: Array.isArray(row.notes) ? row.notes : row.notes ? [row.notes] : []
       }));
     }
     return generateData();
@@ -92,7 +87,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   const [uploadRowIndex, setUploadRowIndex] = useState(-1);
   const [tempNotes, setTempNotes] = useState([]);
   const [tempAttachmentFiles, setTempAttachmentFiles] = useState([]);
-  const [attachmentUploadRow, setAttachmentUploadRow] = useState(null);
+
   useEffect(() => {
     const newData = getInitialData();
     setData(newData);
@@ -109,14 +104,14 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
 
     const term = searchTerm.toLowerCase();
     return (editedData || []).filter((row) =>
-      Object.values(row).some((value) => {
-        if (Array.isArray(value)) {
-          return value.some(
-            (v) => v && v.toString().toLowerCase().includes(term)
-          );
+      Object.values(row).some(
+        (value) => {
+          if (Array.isArray(value)) {
+            return value.some(v => v && v.toString().toLowerCase().includes(term));
+          }
+          return value && value.toString().toLowerCase().includes(term);
         }
-        return value && value.toString().toLowerCase().includes(term);
-      })
+      )
     );
   }, [editedData, searchTerm]);
 
@@ -223,87 +218,27 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   const openUploadModal = (indexOnPage) => {
     const globalIndex = currentPage * rowsPerPage + indexOnPage;
     const row = filteredData[globalIndex];
-    setAttachmentUploadRow(row);
     setUploadRowIndex(indexOnPage);
-
-    // Initialize notes - handle both array of strings and array of objects
     const existingNotes = row?.notes || [];
-    const noteObjects = Array.isArray(existingNotes)
-      ? existingNotes.map((note) =>
-          typeof note === "string"
-            ? { id: "0", company: row.id, body: note, created_at: null }
-            : note
-        )
-      : [];
-
-    // Initialize attachments - handle both array of strings/objects and single values
-    const existingAttach = row?.attachments || row?.attachment;
-    const attachmentObjects = Array.isArray(existingAttach)
-      ? existingAttach.map((attachment) =>
-          typeof attachment === "string"
-            ? {
-                id: "0",
-                company: row.id,
-                title: "Attachment",
-                file: attachment,
-                created_at: null,
-              }
-            : attachment
-        )
-      : existingAttach
-      ? [
-          typeof existingAttach === "string"
-            ? {
-                id: "0",
-                company: row.id,
-                title: "Attachment",
-                file: existingAttach,
-                created_at: null,
-              }
-            : existingAttach,
-        ]
-      : [];
-
-    setTempNotes(noteObjects);
-    setTempAttachmentFiles(attachmentObjects);
+    const existingAttach = row?.attachment;
+    setTempNotes(Array.isArray(existingNotes) ? [...existingNotes] : []);
+    setTempAttachmentFiles(
+      Array.isArray(existingAttach)
+        ? existingAttach
+        : existingAttach
+        ? [existingAttach]
+        : []
+    );
     setIsUploadOpen(true);
   };
-
-  const closeUploadModal = (notes, attachments) => {
-    // Filter out notes and attachments with id "0" (unsaved items)
-    const filteredNotes = notes?.filter((note) => note.id !== "0") || [];
-    const filteredAttachments =
-      attachments?.filter((attachment) => attachment.id !== "0") || [];
-
-    // Update the row data with filtered notes and attachments
-    if (attachmentUploadRow && uploadRowIndex >= 0) {
-      const globalIndex = currentPage * rowsPerPage + uploadRowIndex;
-      const actualIndex = filteredData[globalIndex]
-        ? editedData.findIndex((row) => row === filteredData[globalIndex])
-        : -1;
-
-      if (actualIndex >= 0) {
-        setEditedData((prev) => {
-          const copy = [...(prev || [])];
-          copy[actualIndex] = {
-            ...copy[actualIndex],
-            notes: filteredNotes.map((note) => note.body), // Extract body values for display
-            attachments: filteredAttachments.map((attachment) => ({
-              ...attachment,
-              file: attachment.file, // Keep the file URL or object
-            })),
-          };
-          return copy;
-        });
-      }
-    }
-
+  
+  const closeUploadModal = () => {
     setIsUploadOpen(false);
     setUploadRowIndex(-1);
     setTempNotes([]);
     setTempAttachmentFiles([]);
   };
-
+  
   const applyUploadModal = () => {
     if (uploadRowIndex < 0) return closeUploadModal();
     const globalIndex = currentPage * rowsPerPage + uploadRowIndex;
@@ -338,33 +273,9 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     setTempNotes(tempNotes.filter((_, i) => i !== index));
   };
 
-  const addAttachment = () => {
-    setTempAttachmentFiles([...tempAttachmentFiles, null]);
-  };
-
-  const updateAttachment = (index, file) => {
-    const newAttachments = [...tempAttachmentFiles];
-    newAttachments[index] = file;
-    setTempAttachmentFiles(newAttachments);
-  };
-
-  const removeAttachment = (index) => {
-    setTempAttachmentFiles(tempAttachmentFiles.filter((_, i) => i !== index));
-  };
-
   const renderFileDisplay = (value) => {
-    // Handle both array of strings/objects and single values
-    let items = [];
-    if (Array.isArray(value)) {
-      items = value.map((item) =>
-        typeof item === "string" ? item : item.file || item
-      );
-    } else if (value) {
-      items = [typeof value === "string" ? value : value.file || value];
-    }
-
+    const items = Array.isArray(value) ? value : value ? [value] : [];
     if (items.length === 0) return <span className="text-gray-400">—</span>;
-
     return (
       <div className="flex flex-wrap gap-1 break-words">
         {items.map((it, i) =>
@@ -393,22 +304,11 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   };
 
   const renderNotesDisplay = (notes) => {
-    if (!notes || notes.length === 0)
-      return <span className="text-gray-400">—</span>;
-
-    // Handle both array of strings and array of objects
-    const noteTexts = notes.map((note) =>
-      typeof note === "string" ? note : note.body || note
-    );
-
+    if (!notes || notes.length === 0) return <span className="text-gray-400">—</span>;
     return (
       <div className="space-y-1 break-words">
-        {noteTexts.map((note, i) => (
-          <div
-            key={i}
-            className="text-xs text-gray-700 break-words"
-            title={note}
-          >
+        {notes.map((note, i) => (
+          <div key={i} className="text-xs text-gray-700 break-words" title={note}>
             {note}
           </div>
         ))}
@@ -421,14 +321,14 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
       {/* Header with View Tabs */}
       <div className="px-8 py-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center justify-between mb-6">
-          {/* <div>
+          <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
               Company Data
             </h3>
             <p className="text-gray-600">
               Preview and edit company information
             </p>
-          </div> */}
+          </div>
         </div>
 
         {/* Search and View Controls */}
@@ -484,15 +384,16 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
             </div>
             {searchTerm && (
               <p className="text-sm text-gray-500 mt-2">
-                Showing {filteredData.length} of {editedData?.length || 0}{" "}
-                companies
+                Showing {filteredData.length} of {editedData?.length || 0} companies
               </p>
             )}
           </div>
 
           {/* View Mode Tabs */}
           <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-gray-700">View:</span>
+            <span className="text-sm font-semibold text-gray-700">
+              View:
+            </span>
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => setViewMode("list")}
@@ -586,9 +487,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                 ))}
               </div>
               {capNote && (
-                <div className="mt-3 text-sm text-red-600 font-medium">
-                  {capNote}
-                </div>
+                <div className="mt-3 text-sm text-red-600 font-medium">{capNote}</div>
               )}
               <div className="mt-3 text-sm text-red-600">
                 Processed {processedRows} rows
@@ -635,10 +534,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
       <div className="flex-1 overflow-hidden flex flex-col">
         {/* List View */}
         {viewMode === "list" && filteredData.length > 0 && (
-          <div
-            className="mx-8 mt-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm flex-1 flex flex-col"
-            style={{ maxHeight: "46vh" }}
-          >
+          <div className="mx-8 mt-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm flex-1 flex flex-col">
             <div className="overflow-y-auto overflow-x-hidden flex-1">
               <table className="w-full table-fixed divide-y divide-gray-200">
                 <thead className="bg-gray-50 sticky top-0 z-10">
@@ -666,10 +562,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {currentRows.map((row, idx) => (
-                    <tr
-                      key={offset + idx}
-                      className="hover:bg-gray-50 transition-colors duration-150 align-top"
-                    >
+                    <tr key={offset + idx} className="hover:bg-gray-50 transition-colors duration-150 align-top">
                       {columns.map((c) => {
                         const isEmpty = isFieldEmpty(row, c.key);
                         const hasFieldIssue = getFieldIssues(c.key);
@@ -702,9 +595,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                         ? "border-red-300 bg-red-50"
                                         : "border-gray-300"
                                     } break-words`}
-                                    placeholder={
-                                      isEmpty ? "Required field" : ""
-                                    }
+                                    placeholder={isEmpty ? "Required field" : ""}
                                   />
                                   {row[c.key] && (
                                     <a
@@ -765,8 +656,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                             )}
                             {editing &&
                               isEmpty &&
-                              !isAttachment &&
-                              !isNotes && (
+                              !isAttachment && !isNotes && (
                                 <div className="text-xs text-red-500 mt-1">
                                   Empty field
                                 </div>
@@ -821,7 +711,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                             )}
                           </button>
                           <button
-                            onClick={() => openUploadModal(idx, "row")}
+                            onClick={() => openUploadModal(idx)}
                             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-purple-600 text-white hover:bg-purple-700 transition-all duration-200"
                           >
                             <svg
@@ -852,10 +742,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
         {/* Grid View */}
         {viewMode === "grid" && filteredData.length > 0 && (
           <div className="mx-8 mt-6 overflow-y-auto overflow-x-hidden flex-1">
-            <div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-6"
-              style={{ maxHeight: "46vh" }}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-6">
               {currentRows.map((row, idx) => {
                 const editing = isRowEditing(idx);
                 return (
@@ -884,74 +771,44 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         )}
                       </div>
                     </div>
-
+                    
                     <div className="space-y-3 mb-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
-                          Industry
-                        </span>
-                        <span className="text-sm text-gray-900 font-semibold">
-                          {row.industry}
-                        </span>
+                        <span className="text-sm font-medium text-gray-500">Industry</span>
+                        <span className="text-sm text-gray-900 font-semibold">{row.industry}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
-                          Revenue
-                        </span>
-                        <span className="text-sm text-gray-900 font-semibold">
-                          ${row.revenue}M
-                        </span>
+                        <span className="text-sm font-medium text-gray-500">Revenue</span>
+                        <span className="text-sm text-gray-900 font-semibold">${row.revenue}M</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
-                          Employees
-                        </span>
-                        <span className="text-sm text-gray-900 font-semibold">
-                          {row.employees}
-                        </span>
+                        <span className="text-sm font-medium text-gray-500">Employees</span>
+                        <span className="text-sm text-gray-900 font-semibold">{row.employees}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
-                          HQ
-                        </span>
-                        <span
-                          className="text-sm text-gray-900 font-semibold truncate ml-2"
-                          title={row.hq_location}
-                        >
-                          {row.hq_location}
-                        </span>
+                        <span className="text-sm font-medium text-gray-500">HQ</span>
+                        <span className="text-sm text-gray-900 font-semibold truncate ml-2" title={row.hq_location}>{row.hq_location}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
-                          Contact
-                        </span>
-                        <span
-                          className="text-sm text-gray-900 font-semibold truncate ml-2"
-                          title={row.contact_person}
-                        >
-                          {row.contact_person}
-                        </span>
+                        <span className="text-sm font-medium text-gray-500">Contact</span>
+                        <span className="text-sm text-gray-900 font-semibold truncate ml-2" title={row.contact_person}>{row.contact_person}</span>
                       </div>
                     </div>
-
+                    
                     <div className="space-y-3 mb-6">
                       <div>
-                        <span className="text-sm font-medium text-gray-500 block mb-1">
-                          Notes
-                        </span>
+                        <span className="text-sm font-medium text-gray-500 block mb-1">Notes</span>
                         {renderNotesDisplay(row.notes)}
                       </div>
                       <div>
-                        <span className="text-sm font-medium text-gray-500 block mb-1">
-                          Attachment
-                        </span>
+                        <span className="text-sm font-medium text-gray-500 block mb-1">Attachment</span>
                         {renderFileDisplay(row.attachment)}
                       </div>
                     </div>
-
+                    
                     <div className="flex flex-wrap flex-col gap-2 pt-4 border-t border-gray-100">
                       <button
-                        onClick={() => openUploadModal(idx, "row")}
+                        onClick={() => openUploadModal(idx)}
                         className="flex-1 px-3 py-2 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                       >
                         Upload
@@ -973,51 +830,177 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
             </div>
           </div>
         )}
-        <div className="flex justify-between">
-          {/* Pagination */}
-          {filteredData.length > 0 && (
-            <div className="mx-8 mt-6 flex justify-center items-center gap-4 flex-shrink-0">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-                disabled={currentPage === 0}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                ← Previous
-              </button>
-              <span className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold">
-                {currentPage + 1} / {pageCount}
-              </span>
-              <button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(pageCount - 1, p + 1))
-                }
-                disabled={currentPage === pageCount - 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next →
-              </button>
-            </div>
-          )}
-          <div className="px-8 py-6 bg-gray-50 border-t border-gray-200 flex justify-end gap-4 flex-shrink-0">
+
+        {/* Pagination */}
+        {filteredData.length > 0 && (
+          <div className="mx-8 mt-6 flex justify-center items-center gap-4 flex-shrink-0">
             <button
-              onClick={handleCancel}
-              className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+              onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+              disabled={currentPage === 0}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Cancel
+              ← Previous
+            </button>
+            <span className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold">
+              {currentPage + 1} / {pageCount}
+            </span>
+            <button
+              onClick={() =>
+                setCurrentPage((p) => Math.min(pageCount - 1, p + 1))
+              }
+              disabled={currentPage === pageCount - 1}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Next →
             </button>
           </div>
-        </div>
+        )}
       </div>
+
+      {/* Action Buttons - Fixed at bottom */}
+      <div className="px-8 py-6 bg-gray-50 border-t border-gray-200 flex justify-end gap-4 flex-shrink-0">
+        <button
+          onClick={handleCancel}
+          className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center transition-colors"
+        >
+          {isSaving ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Saving...
+            </>
+          ) : (
+            "Save Changes"
+          )}
+        </button>
+      </div>
+
       {/* Upload Modal */}
-      {/* {isUploadOpen && (
-        
-      )} */}
-      <TempUploadModal
-        closeUploadModal={closeUploadModal}
-        isUploadOpen={isUploadOpen}
-        applyUploadModal={applyUploadModal}
-        row={attachmentUploadRow}
-      />
+      {isUploadOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={closeUploadModal}
+          ></div>
+          <div className="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-8 mx-4">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">
+              Manage Notes & Attachments
+            </h3>
+            <div className="space-y-8">
+              {/* Notes Section */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <label className="block text-lg font-semibold text-gray-700">
+                    Notes (Text)
+                  </label>
+                  <button
+                    onClick={addNote}
+                    className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors"
+                  >
+                    + Add Note
+                  </button>
+                </div>
+                <div className="space-y-3 max-h-48 overflow-y-auto">
+                  {tempNotes.map((note, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <input
+                        type="text"
+                        value={note}
+                        onChange={(e) => updateNote(index, e.target.value)}
+                        placeholder="Enter note..."
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                      <button
+                        onClick={() => removeNote(index)}
+                        className="px-3 py-3 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  {tempNotes.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      <svg className="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <p className="text-sm">No notes added yet. Click "Add Note" to add one.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Attachments Section */}
+              <div>
+                <label className="block text-lg font-semibold text-gray-700 mb-4">
+                  Attachment files (PDF)
+                </label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  multiple
+                  onChange={(e) =>
+                    setTempAttachmentFiles([
+                      ...(e.target.files ? Array.from(e.target.files) : []),
+                    ])
+                  }
+                  className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors"
+                />
+                {tempAttachmentFiles.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {tempAttachmentFiles.map((f, i) => (
+                      <span
+                        key={i}
+                        className="text-sm bg-gray-100 text-gray-700 px-3 py-2 rounded-lg"
+                        title={f.name || f}
+                      >
+                        {(f && f.name) || f}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="mt-8 flex justify-end gap-3">
+              <button
+                onClick={closeUploadModal}
+                className="px-6 py-3 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={applyUploadModal}
+                className="px-6 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

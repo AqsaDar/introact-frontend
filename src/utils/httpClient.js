@@ -160,9 +160,12 @@ export function createAbortController() {
 }
 
 // File upload helper
-export async function uploadFile(url, file, extraData = {}, { headers, onUploadProgress, signal } = {}) {
+export async function uploadFile(url, file, company, extraData = {}, { headers, onUploadProgress, signal } = {}) {
   const formData = new FormData();
   formData.append('file', file);
+  if (company) {
+    formData.append('company', company);
+  }
   Object.entries(extraData || {}).forEach(([key, value]) => formData.append(key, value));
 
   const response = await http.post(url, formData, {
