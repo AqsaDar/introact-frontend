@@ -38,7 +38,7 @@ function Pipeline() {
       id: 'validation', 
       title: 'Data Validation', 
       description: 'AI validates company data',
-      color: 'bg-blue-500',
+      color: 'bg-gray-600',
       icon: FileText,
       companies: companies.filter(c => c.stage === 'validation')
     },
@@ -46,7 +46,7 @@ function Pipeline() {
       id: 'email_outreach', 
       title: 'Email Outreach', 
       description: 'Automated email campaigns',
-      color: 'bg-purple-500',
+      color: 'bg-gray-600',
       icon: Send,
       companies: companies.filter(c => c.stage === 'email_outreach')
     },
@@ -54,7 +54,7 @@ function Pipeline() {
       id: 'call_initiated', 
       title: 'AI Call Initiated', 
       description: 'Scheduled AI conversations',
-      color: 'bg-orange-500',
+      color: 'bg-gray-600',
       icon: Phone,
       companies: companies.filter(c => c.stage === 'call_initiated')
     },
@@ -62,7 +62,7 @@ function Pipeline() {
       id: 'ai_analysis', 
       title: 'AI Analysis', 
       description: 'Processing call transcripts',
-      color: 'bg-cyan-500',
+      color: 'bg-gray-600',
       icon: Brain,
       companies: companies.filter(c => c.stage === 'ai_analysis')
     },
@@ -70,7 +70,7 @@ function Pipeline() {
       id: 'human_review', 
       title: 'Human Review', 
       description: 'Expert evaluation required',
-      color: 'bg-indigo-500',
+      color: 'bg-gray-600',
       icon: Users,
       companies: companies.filter(c => c.stage === 'human_review')
     },
@@ -78,7 +78,7 @@ function Pipeline() {
       id: 'final_decision', 
       title: 'Final Decision', 
       description: 'Approved or rejected',
-      color: 'bg-green-500',
+      color: 'bg-gray-600',
       icon: TrendingUp,
       companies: companies.filter(c => c.stage === 'final_decision')
     }
@@ -88,7 +88,7 @@ function Pipeline() {
     switch (priority) {
       case 'critical': return 'bg-red-100 text-red-800 border-red-200';
       case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'medium': return 'bg-gray-100 text-gray-800 border-gray-200';
       case 'low': return 'bg-gray-100 text-gray-800 border-gray-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -107,10 +107,10 @@ function Pipeline() {
   const getStatusColor = (company) => {
     const statusMap = {
       'high_priority': 'text-red-700 bg-red-100 border-red-200',
-      'pending_human_review': 'text-indigo-700 bg-indigo-100 border-indigo-200',
-      'analyzing': 'text-cyan-700 bg-cyan-100 border-cyan-200',
-      'call_scheduled': 'text-orange-700 bg-orange-100 border-orange-200',
-      'email_sent': 'text-purple-700 bg-purple-100 border-purple-200',
+      'pending_human_review': 'text-gray-700 bg-gray-100 border-gray-200',
+      'analyzing': 'text-gray-700 bg-gray-100 border-gray-200',
+      'call_scheduled': 'text-gray-700 bg-gray-100 border-gray-200',
+      'email_sent': 'text-gray-700 bg-gray-100 border-gray-200',
       'approved': 'text-green-700 bg-green-100 border-green-200',
       'rejected': 'text-red-700 bg-red-100 border-red-200'
     };
@@ -136,7 +136,7 @@ function Pipeline() {
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-2">
-              <h4 className="font-bold text-gray-900 text-base group-hover:text-blue-600 transition-colors">
+              <h4 className="font-bold text-gray-900 text-base group-hover:text-gray-600 transition-colors">
                 {company.name}
               </h4>
               {company.ipoPlan && (
@@ -223,7 +223,7 @@ function Pipeline() {
                 setSelectedCompany(company);
                 setShowCompanyDetails(true);
               }}
-              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all duration-200"
               title="View Details"
             >
               <Eye className="w-4 h-4" />
@@ -235,7 +235,7 @@ function Pipeline() {
                   setSelectedCompany(company);
                   setShowEmailPreview(true);
                 }}
-                className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200"
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all duration-200"
                 title="View Email"
               >
                 <Send className="w-4 h-4" />
@@ -248,7 +248,7 @@ function Pipeline() {
                   setSelectedCompany(company);
                   setShowTranscript(true);
                 }}
-                className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all duration-200"
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all duration-200"
                 title="View Transcript"
               >
                 <MessageCircle className="w-4 h-4" />
@@ -300,7 +300,7 @@ function Pipeline() {
         
         <button
           onClick={() => setShowCallConfig(true)}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-md hover:shadow-lg"
+          className="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors shadow-md hover:shadow-lg"
         >
           <Settings className="w-4 h-4 mr-2" />
           Configure Call Questions
@@ -446,7 +446,7 @@ function Pipeline() {
                         </div>
                         <div className="flex items-center space-x-2">
                           <ExternalLink className="w-4 h-4 text-gray-400" />
-                          <a href={`https://${selectedCompany.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">
+                          <a href={`https://${selectedCompany.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:underline">
                             {selectedCompany.website}
                           </a>
                         </div>
@@ -502,8 +502,8 @@ function Pipeline() {
                             </span>
                           </div>
                           {selectedCompany.aiReasoning && (
-                            <div className="mt-2 p-3 bg-blue-50 rounded-lg">
-                              <p className="text-sm text-blue-800">{selectedCompany.aiReasoning}</p>
+                            <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                              <p className="text-sm text-gray-800">{selectedCompany.aiReasoning}</p>
                             </div>
                           )}
                         </div>
@@ -526,7 +526,7 @@ function Pipeline() {
                       setShowCompanyDetails(false);
                       setShowTranscript(true);
                     }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     View Transcript
                   </button>
@@ -558,7 +558,7 @@ function Pipeline() {
                 <div className="space-y-4">
                   {questions.map((question, index) => (
                     <div key={index} className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                      <span className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                      <span className="flex-shrink-0 w-8 h-8 bg-gray-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                         {index + 1}
                       </span>
                       <input
@@ -585,7 +585,7 @@ function Pipeline() {
                 </button>
                 <button
                   onClick={() => setShowCallConfig(false)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   Save Changes
                 </button>
@@ -617,7 +617,7 @@ function Pipeline() {
                   <div className="border-b border-gray-300 pb-4 mb-4">
                     <div className="flex items-center justify-between text-sm mb-2">
                       <span className="font-semibold text-gray-900">To: {selectedCompany.email}</span>
-                      <span className="text-gray-500 bg-blue-100 px-2 py-1 rounded text-xs">AI Generated</span>
+                      <span className="text-gray-500 bg-gray-100 px-2 py-1 rounded text-xs">AI Generated</span>
                     </div>
                     <div className="text-sm text-gray-700 font-medium">
                       Subject: Partnership Opportunity - AI Automation Solutions
@@ -648,7 +648,7 @@ function Pipeline() {
               <div className="bg-gray-50 px-6 py-4 flex justify-end">
                 <button
                   onClick={() => setShowEmailPreview(false)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   Close
                 </button>
@@ -706,9 +706,9 @@ function Pipeline() {
                         </span>
                       </div>
                       
-                      <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                        <h5 className="text-sm font-semibold text-blue-900 mb-2">AI Reasoning</h5>
-                        <p className="text-sm text-blue-800 leading-relaxed">{selectedCompany.aiReasoning}</p>
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <h5 className="text-sm font-semibold text-gray-900 mb-2">AI Reasoning</h5>
+                        <p className="text-sm text-gray-800 leading-relaxed">{selectedCompany.aiReasoning}</p>
                       </div>
                     </div>
                   )}
@@ -718,7 +718,7 @@ function Pipeline() {
               <div className="bg-gray-50 px-6 py-4 flex justify-end">
                 <button
                   onClick={() => setShowTranscript(false)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   Close
                 </button>

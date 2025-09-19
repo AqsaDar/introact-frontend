@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { postRequest, uploadFile } from "./src/utils/httpClient";
 
 export const TempUploadModal = ({
@@ -9,7 +9,10 @@ export const TempUploadModal = ({
 }) => {
   const [tempNotes, setTempNotes] = useState([]);
   const [tempAttachmentFiles, setTempAttachmentFiles] = useState([]);
-
+  useEffect(() => {
+    setTempNotes(row?.notes || []);
+    setTempAttachmentFiles(row?.attachments || []);
+  }, [row]);
   const addNote = () => {
     const newNote = {
       id: "0", // New notes get id "0"

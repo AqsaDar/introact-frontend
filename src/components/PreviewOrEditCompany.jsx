@@ -56,8 +56,8 @@ const columns = [
   { key: "contact_person", label: "Contact Person", type: "text" },
   { key: "email", label: "Email", type: "email" },
   { key: "phone", label: "Phone", type: "tel" },
-  { key: "notes", label: "Notes", type: "text" },
-  { key: "attachment", label: "Attachment (PDF)", type: "file" },
+  { key: "notes_count", label: "Notes", type: "text" },
+  { key: "attachments_count", label: "Attachment (PDF)", type: "file" },
 ];
 
 export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
@@ -352,66 +352,28 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     setTempAttachmentFiles(tempAttachmentFiles.filter((_, i) => i !== index));
   };
 
-  const renderFileDisplay = (value) => {
-    // Handle both array of strings/objects and single values
-    let items = [];
-    if (Array.isArray(value)) {
-      items = value.map((item) =>
-        typeof item === "string" ? item : item.file || item
-      );
-    } else if (value) {
-      items = [typeof value === "string" ? value : value.file || value];
-    }
-
-    if (items.length === 0) return <span className="text-gray-400">—</span>;
+  const renderNotesDisplay = (notesCount) => {
+    if (!notesCount || notesCount === 0)
+      return <span className="text-gray-400">—</span>;
 
     return (
-      <div className="flex flex-wrap gap-1 break-words">
-        {items.map((it, i) =>
-          isUrl(it) ? (
-            <a
-              key={i}
-              href={normalizeUrl(it)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline text-xs break-words"
-            >
-              {it}
-            </a>
-          ) : (
-            <span
-              key={i}
-              className="text-gray-700 text-xs break-words"
-              title={it?.name || it}
-            >
-              {(it && it.name) || it}
-            </span>
-          )
-        )}
+      <div className="flex items-center justify-center">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          {notesCount} note{notesCount !== 1 ? "s" : ""}
+        </span>
       </div>
     );
   };
 
-  const renderNotesDisplay = (notes) => {
-    if (!notes || notes.length === 0)
+  const renderFileDisplay = (attachmentCount) => {
+    if (!attachmentCount || attachmentCount === 0)
       return <span className="text-gray-400">—</span>;
 
-    // Handle both array of strings and array of objects
-    const noteTexts = notes.map((note) =>
-      typeof note === "string" ? note : note.body || note
-    );
-
     return (
-      <div className="space-y-1 break-words">
-        {noteTexts.map((note, i) => (
-          <div
-            key={i}
-            className="text-xs text-gray-700 break-words"
-            title={note}
-          >
-            {note}
-          </div>
-        ))}
+      <div className="flex items-center justify-center">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          {attachmentCount} attachment{attachmentCount !== 1 ? "s" : ""}
+        </span>
       </div>
     );
   };
@@ -419,7 +381,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   return (
     <div className="h-screen flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Header with View Tabs */}
-      <div className="px-8 py-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 flex-shrink-0">
+      <div className="px-8 py-6 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center justify-between mb-6">
           {/* <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
@@ -459,7 +421,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                   setSearchTerm(e.target.value);
                   setCurrentPage(0);
                 }}
-                className="block w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                className="block w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-white shadow-sm"
               />
               {searchTerm && (
                 <button
@@ -492,13 +454,13 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
 
           {/* View Mode Tabs */}
           <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-gray-700">View:</span>
+            <span className="text-sm font-medium text-gray-700">View:</span>
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => setViewMode("list")}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                   viewMode === "list"
-                    ? "bg-white text-blue-600 shadow-sm"
+                    ? "bg-white text-gray-900 shadow-sm"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
@@ -515,7 +477,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                 onClick={() => setViewMode("grid")}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                   viewMode === "grid"
-                    ? "bg-white text-blue-600 shadow-sm"
+                    ? "bg-white text-gray-900 shadow-sm"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
@@ -623,7 +585,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
             </p>
             <button
               onClick={clearSearch}
-              className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-500 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-500 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
             >
               Clear search
             </button>
@@ -674,8 +636,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         const isEmpty = isFieldEmpty(row, c.key);
                         const hasFieldIssue = getFieldIssues(c.key);
                         const isWebsite = c.key === "website";
-                        const isAttachment = c.key === "attachment";
-                        const isNotes = c.key === "notes";
+                        const isAttachment = c.key === "attachments_count";
+                        const isNotes = c.key === "notes_count";
                         const editing = isRowEditing(idx);
 
                         return (
@@ -697,7 +659,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                       handleChange(idx, c.key, e.target.value)
                                     }
                                     title={row[c.key] ?? ""}
-                                    className={`w-full border px-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                    className={`w-full border px-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 ${
                                       isEmpty || hasFieldIssue
                                         ? "border-red-300 bg-red-50"
                                         : "border-gray-300"
@@ -712,7 +674,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       title={normalizeUrl(row[c.key])}
-                                      className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-600 hover:text-blue-700"
+                                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700"
                                     >
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -732,7 +694,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                       href={normalizeUrl(row[c.key])}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-blue-600 hover:text-blue-800 hover:underline font-medium break-words"
+                                      className="text-gray-600 hover:text-gray-800 hover:underline font-medium break-words"
                                       title={normalizeUrl(row[c.key])}
                                     >
                                       {row[c.key]}
@@ -749,7 +711,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                 onChange={(e) =>
                                   handleChange(idx, c.key, e.target.value)
                                 }
-                                className={`w-full border px-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                className={`w-full border px-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 ${
                                   isEmpty || hasFieldIssue
                                     ? "border-red-300 bg-red-50"
                                     : "border-gray-300"
@@ -780,7 +742,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                             onClick={() => toggleRowEditing(idx)}
                             className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                               isRowEditing(idx)
-                                ? "bg-blue-600 text-white shadow-sm"
+                                ? "bg-gray-600 text-white shadow-sm"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             }`}
                           >
@@ -822,7 +784,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                           </button>
                           <button
                             onClick={() => openUploadModal(idx, "row")}
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-purple-600 text-white hover:bg-purple-700 transition-all duration-200"
+                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-gray-600 text-white hover:bg-gray-700 transition-all duration-200"
                           >
                             <svg
                               className="w-4 h-4"
@@ -877,7 +839,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                             target="_blank"
                             rel="noopener noreferrer"
                             title={normalizeUrl(row.website)}
-                            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                            className="text-gray-600 hover:text-gray-700 text-sm font-medium"
                           >
                             Visit ↗
                           </a>
@@ -939,20 +901,20 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         <span className="text-sm font-medium text-gray-500 block mb-1">
                           Notes
                         </span>
-                        {renderNotesDisplay(row.notes)}
+                        {renderNotesDisplay(row.notes_count)}
                       </div>
                       <div>
                         <span className="text-sm font-medium text-gray-500 block mb-1">
                           Attachment
                         </span>
-                        {renderFileDisplay(row.attachment)}
+                        {renderFileDisplay(row.attachments_count)}
                       </div>
                     </div>
 
                     <div className="flex flex-wrap flex-col gap-2 pt-4 border-t border-gray-100">
                       <button
                         onClick={() => openUploadModal(idx, "row")}
-                        className="flex-1 px-3 py-2 text-xs font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                        className="flex-1 px-3 py-2 text-xs font-medium bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                       >
                         Upload
                       </button>
@@ -960,7 +922,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         onClick={() => toggleRowEditing(idx)}
                         className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
                           editing
-                            ? "bg-blue-600 text-white"
+                            ? "bg-gray-600 text-white"
                             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
                       >
@@ -984,7 +946,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
               >
                 ← Previous
               </button>
-              <span className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold">
+              <span className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm font-semibold">
                 {currentPage + 1} / {pageCount}
               </span>
               <button
@@ -1009,9 +971,6 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
         </div>
       </div>
       {/* Upload Modal */}
-      {/* {isUploadOpen && (
-        
-      )} */}
       <TempUploadModal
         closeUploadModal={closeUploadModal}
         isUploadOpen={isUploadOpen}
