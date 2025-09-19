@@ -6,7 +6,6 @@ import { X, Check } from "lucide-react";
 export const TempUploadModal = ({
   isUploadOpen,
   closeUploadModal,
-  applyUploadModal,
   row,
 }) => {
   const [tempNotes, setTempNotes] = useState([]);
@@ -334,7 +333,7 @@ export const TempUploadModal = ({
               Cancel
             </button>
             <button
-              onClick={applyUploadModal}
+              onClick={() => closeUploadModal(tempNotes, tempAttachmentFiles)}
               className="px-6 py-3 rounded-lg bg-gray-600 text-white hover:bg-gray-700 font-medium transition-colors"
             >
               Done

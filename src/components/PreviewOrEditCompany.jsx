@@ -1,50 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { postRequest } from "../utils/httpClient";
+import { getRequest, postRequest } from "../utils/httpClient";
 import Loader from "./Loader";
 import { TempUploadModal } from "../../temp_upload_modal";
 
-// Fallback demo data
-const generateData = () => {
-  const base = [
-    {
-      company_name: "AlphaTech",
-      website: "https://alphatech.com",
-      industry: "Software",
-      revenue: 120,
-      employees: 500,
-      hq_location: "NY, USA",
-      contact_person: "John Doe",
-      email: "john@alpha.com",
-      phone: "+1-202-555-01",
-      notes: ["Recently expanded", "Planning new features"],
-      attachment: "deck_alphatech.pdf",
-    },
-    {
-      company_name: "BioHealth Inc.",
-      website: "https://biohealth.com",
-      industry: "Healthcare",
-      revenue: 85,
-      employees: 300,
-      hq_location: "Boston, USA",
-      contact_person: "Alice Smith",
-      email: "alice@biohealth.com",
-      phone: "+1-202-555-02",
-      notes: ["Filed 3 new patents", "Expanding to Europe"],
-      attachment: "biohealth_model.xlsx",
-    },
-  ];
+// // Fallback demo data
+// const generateData = () => {
 
-  const rows = [];
-  for (let i = 0; i < 50; i++) {
-    const template = base[i % base.length];
-    rows.push({
-      ...template,
-      company_name: `${template.company_name} ${i + 1}`,
-      notes: Array.isArray(template.notes) ? template.notes : [template.notes],
-    });
-  }
-  return rows;
-};
+// };
 
 const columns = [
   { key: "company_name", label: "Company Name", type: "text" },
@@ -67,36 +29,26 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
       Array.isArray(content.rows) &&
       content.rows.length > 0
     ) {
-      return content.rows.map((row) => ({
+      return content?.rows?.map((row) => ({
         ...row,
-        notes: Array.isArray(row.notes)
-          ? row.notes
-          : row.notes
-          ? [row.notes]
-          : [],
       }));
     }
-    return generateData();
   };
 
-  const [data, setData] = useState(() => getInitialData());
-  const [editedData, setEditedData] = useState(() => getInitialData());
+  const [data, setData] = useState([]);
+  const [editedData, setEditedData] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [viewMode, setViewMode] = useState("list"); // 'list' | 'grid'
   const [searchTerm, setSearchTerm] = useState("");
   const [editingRows, setEditingRows] = useState(new Set());
-
-  // Upload modal state - for both notes and attachments
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [uploadRowIndex, setUploadRowIndex] = useState(-1);
-  const [tempNotes, setTempNotes] = useState([]);
-  const [tempAttachmentFiles, setTempAttachmentFiles] = useState([]);
   const [attachmentUploadRow, setAttachmentUploadRow] = useState(null);
   useEffect(() => {
     const newData = getInitialData();
     setData(newData);
-    setEditedData(newData.map((r) => ({ ...r })));
+    setEditedData(newData?.map((r) => ({ ...r })));
     setCurrentPage(0);
   }, [content]);
 
@@ -224,129 +176,34 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     const globalIndex = currentPage * rowsPerPage + indexOnPage;
     const row = filteredData[globalIndex];
     setAttachmentUploadRow(row);
-    setUploadRowIndex(indexOnPage);
-
-    // Initialize notes - handle both array of strings and array of objects
-    const existingNotes = row?.notes || [];
-    const noteObjects = Array.isArray(existingNotes)
-      ? existingNotes.map((note) =>
-          typeof note === "string"
-            ? { id: "0", company: row.id, body: note, created_at: null }
-            : note
-        )
-      : [];
-
-    // Initialize attachments - handle both array of strings/objects and single values
-    const existingAttach = row?.attachments || row?.attachment;
-    const attachmentObjects = Array.isArray(existingAttach)
-      ? existingAttach.map((attachment) =>
-          typeof attachment === "string"
-            ? {
-                id: "0",
-                company: row.id,
-                title: "Attachment",
-                file: attachment,
-                created_at: null,
-              }
-            : attachment
-        )
-      : existingAttach
-      ? [
-          typeof existingAttach === "string"
-            ? {
-                id: "0",
-                company: row.id,
-                title: "Attachment",
-                file: existingAttach,
-                created_at: null,
-              }
-            : existingAttach,
-        ]
-      : [];
-
-    setTempNotes(noteObjects);
-    setTempAttachmentFiles(attachmentObjects);
+    // setUploadRowIndex(indexOnPage);
     setIsUploadOpen(true);
   };
 
-  const closeUploadModal = (notes, attachments) => {
+  const closeUploadModal = async (notes, attachments) => {
     // Filter out notes and attachments with id "0" (unsaved items)
     const filteredNotes = notes?.filter((note) => note.id !== "0") || [];
     const filteredAttachments =
       attachments?.filter((attachment) => attachment.id !== "0") || [];
 
-    // Update the row data with filtered notes and attachments counts
-    if (attachmentUploadRow && uploadRowIndex >= 0) {
-      const globalIndex = currentPage * rowsPerPage + uploadRowIndex;
-      const actualIndex = filteredData[globalIndex]
-        ? editedData.findIndex((row) => row === filteredData[globalIndex])
-        : -1;
+    // Find the correct index in editedData
+    const rowIndex = editedData.findIndex((row) => row === attachmentUploadRow);
 
-      if (actualIndex >= 0) {
-        setEditedData((prev) => {
-          const copy = [...(prev || [])];
-          copy[actualIndex] = {
-            ...copy[actualIndex],
-            notes_count: filteredNotes.length,
-            attachments_count: filteredAttachments.length,
-          };
-          return copy;
-        });
-      }
-    }
-
-    setIsUploadOpen(false);
-    setUploadRowIndex(-1);
-    setTempNotes([]);
-    setTempAttachmentFiles([]);
-  };
-
-  const applyUploadModal = () => {
-    if (uploadRowIndex < 0) return closeUploadModal();
-    const globalIndex = currentPage * rowsPerPage + uploadRowIndex;
-    const actualIndex = filteredData[globalIndex]
-      ? editedData.findIndex((row) => row === filteredData[globalIndex])
-      : -1;
-    if (actualIndex >= 0) {
+    if (rowIndex >= 0) {
       setEditedData((prev) => {
         const copy = [...(prev || [])];
-        copy[actualIndex] = {
-          ...copy[actualIndex],
-          notes: [...tempNotes],
-          attachment: [...tempAttachmentFiles],
+        copy[rowIndex] = {
+          ...copy[rowIndex],
+          notes: filteredNotes,
+          attachments: filteredAttachments,
+          notes_count: filteredNotes.length,
+          attachments_count: filteredAttachments.length,
         };
         return copy;
       });
     }
-    closeUploadModal();
-  };
-
-  const addNote = () => {
-    setTempNotes([...tempNotes, ""]);
-  };
-
-  const updateNote = (index, value) => {
-    const newNotes = [...tempNotes];
-    newNotes[index] = value;
-    setTempNotes(newNotes);
-  };
-
-  const removeNote = (index) => {
-    setTempNotes(tempNotes.filter((_, i) => i !== index));
-  };
-
-  const addAttachment = () => {
-    setTempAttachmentFiles([...tempAttachmentFiles, null]);
-  };
-
-  const updateAttachment = (index, file) => {
-    const newAttachments = [...tempAttachmentFiles];
-    newAttachments[index] = file;
-    setTempAttachmentFiles(newAttachments);
-  };
-
-  const removeAttachment = (index) => {
-    setTempAttachmentFiles(tempAttachmentFiles.filter((_, i) => i !== index));
+    setIsUploadOpen(false);
+    setUploadRowIndex(-1);
   };
 
   const renderNotesDisplay = (notesCount) => {
@@ -932,7 +789,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
             </div>
           </div>
         )}
-        <div className="flex justify-between">
+        <div className="flex justify-center">
           {/* Pagination */}
           {filteredData.length > 0 && (
             <div className="mx-8 mt-6 flex justify-center items-center gap-4 flex-shrink-0">
@@ -971,7 +828,6 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
       <TempUploadModal
         closeUploadModal={closeUploadModal}
         isUploadOpen={isUploadOpen}
-        applyUploadModal={applyUploadModal}
         row={attachmentUploadRow}
       />
     </div>
