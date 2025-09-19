@@ -95,6 +95,7 @@ export const TempUploadModal = ({
   };
 
   const removeAttachment = async (index) => {
+    setLoading(true);
     if (tempAttachmentFiles[index].id != "0") {
       const res = await deleteRequest(
         `user/company-attachments/${tempAttachmentFiles[index].id}/?company=${row.id}`
@@ -107,6 +108,7 @@ export const TempUploadModal = ({
     } else {
       setTempAttachmentFiles(tempAttachmentFiles.filter((_, i) => i !== index));
     }
+    setLoading(false);
   };
 
   const saveAttachment = async (index, attachment) => {
