@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 import React, { useCallback, useState, useEffect } from "react";
-import { uploadFile, getRequest } from "../utils/httpClient";
+import { uploadFile, getRequest, postRequest } from "../utils/httpClient";
 import { EditableUploadedModal } from "../components/uploadedCompanyModel";
 import Loader from "../components/Loader";
 import { messages } from "../utils/data";
@@ -40,6 +40,7 @@ export const Upload = () => {
       // Map API response to component state
       const mappedFiles = response.map((file, index) => ({
         id: file.id,
+        pipeline_created: file.pipeline_created,
         name: file.file.split("/").pop() || `file_${index + 1}.xlsx`, // Extract filename from URL
         size: "Unknown", // API doesn't provide file size
         uploadDate: new Date(file.uploaded_at).toISOString().split("T")[0],
@@ -337,15 +338,21 @@ export const Upload = () => {
 
   const addToPipeline = async (fileId) => {
     try {
+      setLoading(true);
       // Call add to pipeline API if available
-      // const response = await postRequest(`/user/file/pipeline/${fileId}/`);
-
-      setFiles((prev) =>
-        prev.map((file) =>
-          file.id === fileId ? { ...file, status: "added_to_pipeline" } : file
-        )
-      );
+      const response = await postRequest(`/company/pipelines/`, {
+        file: fileId,
+      });
+      if (response) {
+        setFiles((prevFiles) =>
+          prevFiles.map((file) =>
+            file.id === fileId ? { ...file, pipeline_created: true } : file
+          )
+        );
+      }
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.error("Add to pipeline error:", error);
     }
   };
@@ -562,59 +569,30 @@ export const Upload = () => {
                         </div>
                       </div>
 
-                      {/* {file.errors.length > 0 && (
-                      <div className="mt-3 p-3 bg-red-50 rounded-lg">
-                        <div className="flex items-start space-x-2">
-                          <AlertCircle className="w-4 h-4 text-red-500 mt-0.5" />
-                          <div>
-                            <p className="text-sm font-medium text-red-800">
-                              Issues Found:
-                            </p>
-                            <ul className="mt-1 text-sm text-red-700 list-disc list-inside">
-                              {file.errors.map((error, index) => (
-                                <li key={index}>{error}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    )} */}
-
                       <div className="mt-4 flex items-center space-x-3">
-                        {file.status === "uploading" && (
-                          <div className="text-sm text-gray-600">
-                            Uploading to server...
-                          </div>
-                        )}
-
-                        {file.status === "processing" && (
-                          <div className="text-sm text-gray-500">
-                            AI validation in progress...
-                          </div>
-                        )}
-
-                        {(file.status === "validated" ||
-                          file.status === "error") && (
-                          <button
-                            onClick={() => validateFile(file.id)}
-                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                            disabled={isUploading}
-                          >
-                            <RefreshCw className="w-4 h-4 mr-1" />
-                            Re-validate
-                          </button>
-                        )}
-
-                        {file.status === "validated" && (
-                          <button
-                            onClick={() => addToPipeline(file.id)}
-                            className="inline-flex items-center px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-sm font-medium rounded-md text-white transition-colors"
-                            disabled={isUploading}
-                          >
+                        <button
+                          onClick={() => validateFile(file.id)}
+                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                          disabled={isUploading}
+                        >
+                          <RefreshCw className="w-4 h-4 mr-1" />
+                          Re-validate
+                        </button>
+                        <button
+                          onClick={() => addToPipeline(file.id)}
+                          className="inline-flex items-center px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-sm font-medium rounded-md text-white transition-colors"
+                          disabled={file.pipeline_created}
+                          style={{ opacity: file.pipeline_created ? 0.5 : 1 }}
+                        >
+                          {file.pipeline_created ? (
+                            ""
+                          ) : (
                             <Plus className="w-4 h-4 mr-1" />
-                            Add to Pipeline
-                          </button>
-                        )}
+                          )}
+                          {file.pipeline_created
+                            ? "Pipeline Created"
+                            : "Add to Pipeline"}
+                        </button>
                       </div>
                     </div>
                   );

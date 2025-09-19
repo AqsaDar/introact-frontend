@@ -275,7 +275,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     const filteredAttachments =
       attachments?.filter((attachment) => attachment.id !== "0") || [];
 
-    // Update the row data with filtered notes and attachments
+    // Update the row data with filtered notes and attachments counts
     if (attachmentUploadRow && uploadRowIndex >= 0) {
       const globalIndex = currentPage * rowsPerPage + uploadRowIndex;
       const actualIndex = filteredData[globalIndex]
@@ -287,11 +287,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
           const copy = [...(prev || [])];
           copy[actualIndex] = {
             ...copy[actualIndex],
-            notes: filteredNotes.map((note) => note.body), // Extract body values for display
-            attachments: filteredAttachments.map((attachment) => ({
-              ...attachment,
-              file: attachment.file, // Keep the file URL or object
-            })),
+            notes_count: filteredNotes.length,
+            attachments_count: filteredAttachments.length,
           };
           return copy;
         });

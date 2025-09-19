@@ -223,7 +223,7 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
           </div>
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto"></div>
               <p className="mt-4 text-gray-600">Loading data...</p>
             </div>
           </div>
@@ -355,7 +355,7 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
                                 handleChange(idx, c.key, e.target.value)
                               }
                               title={row[c.key] ?? ""}
-                              className={`w-full border pr-9 px-2 py-1 rounded text-sm focus:ring focus:ring-blue-200 ${
+                              className={`w-full border pr-9 px-2 py-1 rounded text-sm focus:ring focus:ring-gray-200 ${
                                 isEmpty || hasFieldIssue
                                   ? "border-red-300 bg-red-50 focus:ring-red-200"
                                   : "border-gray-300"
@@ -368,7 +368,7 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 title={normalizeUrl(row[c.key])}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 hover:text-blue-700"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700"
                               >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
@@ -388,7 +388,7 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
                             onChange={(e) =>
                               handleChange(idx, c.key, e.target.value)
                             }
-                            className={`w-full border px-2 py-1 rounded text-sm focus:ring focus:ring-blue-200 ${
+                            className={`w-full border px-2 py-1 rounded text-sm focus:ring focus:ring-gray-200 ${
                               isEmpty || hasFieldIssue
                                 ? "border-red-300 bg-red-50 focus:ring-red-200"
                                 : "border-gray-300"
@@ -419,7 +419,7 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
           >
             ← Prev
           </button>
-          <span className="px-3 py-1 border rounded bg-blue-600 text-white">
+          <span className="px-3 py-1 border rounded bg-gray-600 text-white">
             {currentPage + 1} / {pageCount}
           </span>
           <button
@@ -438,7 +438,7 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {isSaving ? (
               <>

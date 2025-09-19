@@ -130,7 +130,7 @@ export async function getRequest(url, { params, headers, signal } = {}) {
 
 export async function postRequest(url, body = {}, { params, headers, signal } = {}) {
   const response = await http.post(url, body, { params, headers, signal });
-  return response.data;
+  return response;
 }
 
 export async function putRequest(url, body = {}, { params, headers, signal } = {}) {
@@ -140,7 +140,7 @@ export async function putRequest(url, body = {}, { params, headers, signal } = {
 
 export async function deleteRequest(url, { params, headers, signal } = {}) {
   const response = await http.delete(url, { params, headers, signal });
-  return response.data;
+  return response;
 }
 
 // Token management helpers
@@ -173,7 +173,7 @@ export async function uploadFile(url, file, company, extraData = {}, { headers, 
     onUploadProgress,
     signal,
   });
-  return response.data;
+  return response;
 }
 
 export default http;
