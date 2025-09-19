@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { getRequest, postRequest } from "../utils/httpClient";
+import { getRequest, postRequest, putRequest } from "../utils/httpClient";
 import Loader from "./Loader";
 import { TempUploadModal } from "../../temp_upload_modal";
 
@@ -161,7 +161,20 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   const isUrl = (value) =>
     typeof value === "string" && /^https?:\/\//i.test(value);
   const isRowEditing = (indexOnPage) => editingRows.has(offset + indexOnPage);
-  const toggleRowEditing = (indexOnPage) => {
+  const toggleRowEditing = async (indexOnPage) => {
+    if(isRowEditing(indexOnPage)) {
+      setIsSaving(true)
+      const { notes, attachment, id, ...otherData } = editedData[indexOnPage];
+      let res = await putRequest(`user/companies/${editedData[indexOnPage].id}/`, {...otherData})
+      if(res.status === 200) {
+        setEditedData((prev) => {
+          const copy = [...(prev || [])];
+          copy[indexOnPage] = { ...copy[indexOnPage], ...res.data };
+          return copy;
+        });
+      }
+      setIsSaving(false)
+    }
     const globalIndex = offset + indexOnPage;
     setEditingRows((prev) => {
       const next = new Set(prev);
@@ -350,7 +363,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
       </div>
 
       {/* Error Messages */}
-      {isSaving && <Loader isVisible={true} message="Saving changes..." />}
+<Loader isVisible={isSaving} message="Saving changes..." />
 
       {saveError && (
         <div className="mx-8 mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex-shrink-0">
