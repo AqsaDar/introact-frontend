@@ -162,18 +162,21 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     typeof value === "string" && /^https?:\/\//i.test(value);
   const isRowEditing = (indexOnPage) => editingRows.has(offset + indexOnPage);
   const toggleRowEditing = async (indexOnPage) => {
-    if(isRowEditing(indexOnPage)) {
-      setIsSaving(true)
+    if (isRowEditing(indexOnPage)) {
+      setIsSaving(true);
       const { notes, attachment, id, ...otherData } = editedData[indexOnPage];
-      let res = await putRequest(`user/companies/${editedData[indexOnPage].id}/`, {...otherData})
-      if(res.status === 200) {
+      let res = await putRequest(
+        `user/companies/${editedData[indexOnPage].id}/`,
+        { ...otherData }
+      );
+      if (res.status === 200) {
         setEditedData((prev) => {
           const copy = [...(prev || [])];
           copy[indexOnPage] = { ...copy[indexOnPage], ...res.data };
           return copy;
         });
       }
-      setIsSaving(false)
+      setIsSaving(false);
     }
     const globalIndex = offset + indexOnPage;
     setEditingRows((prev) => {
@@ -246,10 +249,33 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-      {/* Header with View Tabs */}
-      <div className="px-8 py-6 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 flex-shrink-0">
-        <div className="flex items-center justify-between mb-6">
+    <div className="h-screen mx-2 flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Header with Back Button and View Tabs */}
+      <div className="px-8 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 flex-shrink-0">
+        {/* Back Button */}
+        <div className="flex items-center mb-2">
+          <button
+            onClick={handleCancel}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Back
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between mb-2">
           {/* <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
               Company Data
@@ -363,7 +389,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
       </div>
 
       {/* Error Messages */}
-<Loader isVisible={isSaving} message="Saving changes..." />
+      <Loader isVisible={isSaving} message="Saving changes..." />
 
       {saveError && (
         <div className="mx-8 mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex-shrink-0">
@@ -792,38 +818,64 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
             </div>
           </div>
         )}
-        <div className="flex justify-center">
-          {/* Pagination */}
-          {filteredData.length > 0 && (
-            <div className="mx-8 mt-6 flex justify-center items-center gap-4 flex-shrink-0">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-                disabled={currentPage === 0}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                ← Previous
-              </button>
-              <span className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm font-semibold">
-                {currentPage + 1} / {pageCount}
-              </span>
-              <button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(pageCount - 1, p + 1))
-                }
-                disabled={currentPage === pageCount - 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Next →
-              </button>
-            </div>
-          )}
-          <div className="px-8 py-6 bg-gray-50 border-t border-gray-200 flex justify-end gap-4 flex-shrink-0">
-            <button
-              onClick={handleCancel}
-              className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
-            >
-              Cancel
-            </button>
+        {/* Footer with Pagination Only */}
+        <div className="px-8 py-6 bg-gray-50 border-t border-gray-200 flex-shrink-0">
+          <div className="flex items-center justify-center">
+            {/* Pagination */}
+            {filteredData.length > 0 && (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                  disabled={currentPage === 0}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                  Previous
+                </button>
+                <div className="flex items-center bg-white border border-gray-300 rounded-lg">
+                  <span className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-l-lg">
+                    {currentPage + 1}
+                  </span>
+                  <span className="px-4 py-2 text-sm text-gray-500">
+                    of {pageCount}
+                  </span>
+                </div>
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(pageCount - 1, p + 1))
+                  }
+                  disabled={currentPage === pageCount - 1}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  Next
+                  <svg
+                    className="w-4 h-4 ml-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
