@@ -764,14 +764,14 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                     </div>
 
                     <div className="space-y-3 mb-6">
-                      <div>
-                        <span className="text-sm font-medium text-gray-500 block mb-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-500 mb-1">
                           Notes
                         </span>
                         {renderNotesDisplay(row.notes_count)}
                       </div>
-                      <div>
-                        <span className="text-sm font-medium text-gray-500 block mb-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-500 mb-1">
                           Attachment
                         </span>
                         {renderFileDisplay(row.attachments_count)}
@@ -784,16 +784,6 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         className="flex-1 px-3 py-2 text-xs font-medium bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                       >
                         Upload
-                      </button>
-                      <button
-                        onClick={() => toggleRowEditing(idx)}
-                        className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors ${
-                          editing
-                            ? "bg-gray-600 text-white"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
-                      >
-                        {editing ? "Done" : "Edit"}
                       </button>
                     </div>
                   </div>
