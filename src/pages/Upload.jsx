@@ -9,10 +9,11 @@ import {
   X,
 } from "lucide-react";
 import React, { useCallback, useState, useEffect } from "react";
+import Papa from "papaparse";
 import { uploadFile, getRequest, postRequest } from "../utils/httpClient";
 import { EditableUploadedModal } from "../components/uploadedCompanyModel";
 import Loader from "../components/Loader";
-import { messages } from "../utils/data";
+import { messages, resetFileInput } from "../utils/data";
 import PreviewOrEditCompany from "../components/PreviewOrEditCompany";
 
 export const Upload = () => {
@@ -38,7 +39,7 @@ export const Upload = () => {
       const response = await getRequest("/user/file/list/");
 
       // Map API response to component state
-      const mappedFiles = response.map((file, index) => ({
+      const mappedFiles = response.data?.map((file, index) => ({
         id: file.id,
         pipeline_created: file.pipeline_created,
         name: file.file.split("/").pop() || `file_${index + 1}.xlsx`, // Extract filename from URL
@@ -68,23 +69,30 @@ export const Upload = () => {
   };
 
   const handlePreviewClick = async (file) => {
-    setLoading(true);
-    let response = await getRequest(`/user/file/preview/${file.id}/`);
-    const filename = response.file.file
-      .split("/")
-      .pop()
-      .split("?")[0]
-      .split("#")[0];
-    const content = { rows: response.preview, file_name: filename };
-    setPreviewData(content);
-    // setIsModalOpen(true);
-    setPreview(true);
-    setLoading(false);
+    try {
+      setLoading(true);
+      let response = await getRequest(`/user/file/preview/${file.id}/`);
+      let responseData = response.data;
+      const filename = responseData.file.file
+        .split("/")
+        .pop()
+        .split("?")[0]
+        .split("#")[0];
+      const content = { rows: responseData.preview, file_name: filename };
+      setPreviewData(content);
+      // setIsModalOpen(true);
+      setPreview(true);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching file preview:", error);
+      setError("Failed to load file preview. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Modal control functions
   const openModal = () => {
-    console.log("Opening modal with previewData:", previewData); // Debug log
     setIsModalOpen(true);
   };
 
@@ -160,7 +168,7 @@ export const Upload = () => {
     }
   }, []);
 
-  const handleChange = useCallback((e) => {
+  const handleChange = useCallback((e, id) => {
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
       handleFiles(Array.from(e.target.files));
@@ -170,7 +178,7 @@ export const Upload = () => {
 
     // 1. Check file size
     if (file.size > 10 * 1024 * 1024) {
-      alert("File size exceeds 10 MB");
+      alert("File size exceeds 10 MBl");
       e.target.value = ""; // reset input
       return;
     }
@@ -185,13 +193,13 @@ export const Upload = () => {
           e.target.value = ""; // reset input
           return;
         }
-        console.log("File valid, rows:", results.data.length);
       },
       error: () => {
         alert("Failed to parse file");
       },
     });
-  }, []);
+    resetFileInput(id);
+  });
 
   const handleFiles = async (fileList) => {
     for (const file of fileList) {
@@ -230,7 +238,7 @@ export const Upload = () => {
             },
           }
         );
-        setPreviewData({ ...response, file_name: file.name });
+        setPreviewData({ ...response.data, file_name: file.name });
         setIsModalOpen(true);
         // Update file with API response
         // setFiles((prev) =>
@@ -439,10 +447,10 @@ export const Upload = () => {
               <input
                 type="file"
                 multiple
+                id="uploadFile"
                 accept=".xlsx,.xls,.csv"
-                onChange={handleChange}
+                onChange={(e)=>handleChange(e, 'uploadFile')}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                disabled={uploadingFiles.size > 0}
               />
 
               <div className="space-y-4">
@@ -450,11 +458,6 @@ export const Upload = () => {
                   <UploadIcon className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {uploadingFiles.size > 0
-                      ? "Uploading files..."
-                      : "Drop files here or click to upload"}
-                  </h3>
                   <p className="text-gray-500">
                     Support for Excel files (.xlsx, .xls) and CSV files
                   </p>

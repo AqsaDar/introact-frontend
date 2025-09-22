@@ -4,87 +4,6 @@ import { postRequest } from "../utils/httpClient";
 import Loader from "./Loader";
 import { messages } from "../utils/data";
 
-/** generate 5000 rows */
-const generateData = () => {
-  const base = [
-    {
-      company: "AlphaTech",
-      website: "https://alphatech.com",
-      industry: "Software",
-      revenue: 120,
-      employees: 500,
-      location: "NY, USA",
-      contact: "John Doe",
-      email: "john@alpha.com",
-      phone: "+1-202-555-01",
-      notes: "Recently expanded",
-      attachment: "deck_alphatech.pdf",
-    },
-    {
-      company: "BioHealth Inc.",
-      website: "https://biohealth.com",
-      industry: "Healthcare",
-      revenue: 85,
-      employees: 300,
-      location: "Boston, USA",
-      contact: "Alice Smith",
-      email: "alice@biohealth.com",
-      phone: "+1-202-555-02",
-      notes: "Filed 3 new patents",
-      attachment: "biohealth_model.xlsx",
-    },
-    {
-      company: "GreenEnergy Ltd.",
-      website: "https://greenenergy.com",
-      industry: "Energy",
-      revenue: 200,
-      employees: 1200,
-      location: "Berlin, Germany",
-      contact: "Robert Green",
-      email: "robert@green.com",
-      phone: "+49-30-555-12",
-      notes: "Partnered with local gov",
-      attachment: "greenenergy_investor.pdf",
-    },
-    {
-      company: "FinServe Corp.",
-      website: "https://finserve.com",
-      industry: "Finance",
-      revenue: 450,
-      employees: 2000,
-      location: "London, UK",
-      contact: "Mary Johnson",
-      email: "mary@finserve.com",
-      phone: "+44-20-555-67",
-      notes: "Strong profit growth",
-      attachment: "finserve_overview.pptx",
-    },
-    {
-      company: "EduNext",
-      website: "https://edunext.com",
-      industry: "Education",
-      revenue: 60,
-      employees: 150,
-      location: "Toronto, Canada",
-      contact: "David Lee",
-      email: "david@edunext.com",
-      phone: "+1-416-555-43",
-      notes: "Launched new platform",
-      attachment: "edunext_case_study.pdf",
-    },
-  ];
-
-  const rows = [];
-  for (let i = 0; i < 500; i++) {
-    const template = base[i % base.length];
-    rows.push({
-      ...template,
-      company: `${template.company} ${i + 1}`,
-    });
-  }
-  return rows;
-};
-
 const columns = [
   { key: "company_name", label: "Company Name", type: "text" },
   { key: "website", label: "Website", type: "url" },
@@ -104,12 +23,11 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
   const getInitialData = () => {
     if (
       content?.rows &&
-      Array.isArray(content.rows) &&
+      Array.isArray(content?.rows) &&
       content.rows.length > 0
     ) {
-      return content.rows;
+      return content?.rows;
     }
-    return generateData();
   };
 
   const [data, setData] = useState(() => getInitialData());
@@ -121,7 +39,7 @@ export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
   useEffect(() => {
     const newData = getInitialData();
     setData(newData);
-    setEditedData(newData.map((r) => ({ ...r })));
+    setEditedData(newData?.map((r) => ({ ...r })));
     setCurrentPage(0); // Reset to first page when data changes
   }, [content]);
 

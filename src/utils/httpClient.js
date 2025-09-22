@@ -125,7 +125,7 @@ http.interceptors.response.use(
 // Generic wrappers
 export async function getRequest(url, { params, headers, signal } = {}) {
   const response = await http.get(url, { params, headers, signal });
-  return response.data;
+  return response;
 }
 
 export async function postRequest(url, body = {}, { params, headers, signal } = {}) {

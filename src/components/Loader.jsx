@@ -6,16 +6,8 @@ export const Loader = ({ isVisible, message = "Loading...", messages = [], curre
 
   // Handle array of messages
   useEffect(() => {
-    console.log("messages", messages);
-    console.log("currentStep", currentStep);
     if (messages && messages.length > 0 && currentStep < messages.length) {
-      // if (currentStep !== undefined) {
-      //   setDisplayMessage(messages[currentStep]);
-      //   setCurrentIndex(currentStep);
-      // } else {
-        // Cycle through messages if no specific step is provided
         const interval = setInterval(() => {
-          console.log("currentIndex", currentIndex);
           setCurrentIndex((prevIndex) => {
             const nextIndex = (prevIndex + 1) % messages.length;
             setDisplayMessage(messages[nextIndex]);
@@ -25,9 +17,7 @@ export const Loader = ({ isVisible, message = "Loading...", messages = [], curre
 
         return () => clearInterval(interval);
       }
-    // } else {
       setDisplayMessage(message);
-    // }
   }, [messages, currentStep, message]);
 
   if (!isVisible) return null;

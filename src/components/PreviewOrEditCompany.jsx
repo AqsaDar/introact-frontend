@@ -115,7 +115,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     setSearchTerm("");
   };
 
-  const isUrl = (value) => typeof value === "string" && /^https?:\/\//i.test(value);
+  const isUrl = (value) =>
+    typeof value === "string" && /^https?:\/\//i.test(value);
   const isRowEditing = (indexOnPage) => editingRows.has(offset + indexOnPage);
   const toggleRowEditing = async (indexOnPage) => {
     if (isRowEditing(indexOnPage)) {

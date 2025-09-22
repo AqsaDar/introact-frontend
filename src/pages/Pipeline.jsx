@@ -45,7 +45,7 @@ function Pipeline() {
       try {
         setLoading(true);
         const response = await getRequest("company/pipeline-items/");
-        setCompanies(response);
+        setCompanies(response.data);
       } catch (error) {
         console.error(error);
       } finally {

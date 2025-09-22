@@ -60,7 +60,6 @@ export const TempUploadModal = ({
       let updatedNotes = [...tempNotes];
       updatedNotes[index] = { ...res.data };
       setTempNotes(updatedNotes);
-      console.log(updatedNotes, "updatedNotes");
       // toast.success("Note saved successfully");
     } else {
       // toast.error("Failed to save note");
@@ -122,7 +121,6 @@ export const TempUploadModal = ({
       let updatedAttachments = [...tempAttachmentFiles];
       updatedAttachments[index] = { ...res.data };
       setTempAttachmentFiles(updatedAttachments);
-      console.log(updatedAttachments, "llll");
     }
     setLoading(false);
   };
