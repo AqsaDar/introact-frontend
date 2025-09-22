@@ -37,14 +37,14 @@ function Login() {
         email: formData.email,
         password: formData.password,
       });
-
+      let responseData = response.data;
       // If we get here, login was successful
-      if (response.access) {
+      if (responseData.access) {
         // Use AuthContext to handle login
         login(
-          response.user || { email: formData.email },
-          response.access,
-          response.refresh
+          responseData.user || { email: formData.email },
+          responseData.access,
+          responseData.refresh
         );
 
         // Navigate to dashboard
