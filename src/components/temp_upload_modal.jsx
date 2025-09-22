@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { deleteRequest, postRequest, uploadFile } from "./src/utils/httpClient";
-import Loader from "./src/components/Loader";
+import { deleteRequest, postRequest, uploadFile } from "../utils/httpClient";
+import Loader from "./Loader";
 import { X, Check } from "lucide-react";
 
 export const TempUploadModal = ({

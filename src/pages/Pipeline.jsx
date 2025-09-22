@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { companies, callQuestions } from "../data/mockData";
 import { getRequest } from "../utils/httpClient";
+import Loader from "../components/Loader";
 
 function Pipeline() {
   const [showCallConfig, setShowCallConfig] = useState(false);
@@ -35,12 +36,21 @@ function Pipeline() {
   const [showCompanyDetails, setShowCompanyDetails] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [questions, setQuestions] = useState(callQuestions);
+  const [loading, setLoading] = useState(true);
   const [companies, setCompanies] = useState([]);
 
   useEffect(() => {
+
     const fetchCompanies = async () => {
-      const response = await getRequest("company/pipeline-items/");
-      setCompanies(response);
+      try {
+        setLoading(true);
+        const response = await getRequest("company/pipeline-items/");
+        setCompanies(response);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchCompanies();
   }, []);
@@ -162,6 +172,7 @@ function Pipeline() {
 
     return (
       <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+        
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -332,6 +343,7 @@ function Pipeline() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Loader isVisible={loading} message="Loading companies..." />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">

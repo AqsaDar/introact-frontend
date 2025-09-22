@@ -1,12 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { getRequest, postRequest, putRequest } from "../utils/httpClient";
 import Loader from "./Loader";
-import { TempUploadModal } from "../../temp_upload_modal";
-
-// // Fallback demo data
-// const generateData = () => {
-
-// };
+import { TempUploadModal } from "./temp_upload_modal";
 
 const columns = [
   { key: "company_name", label: "Company Name", type: "text" },
@@ -34,7 +29,6 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
       }));
     }
   };
-
   const [data, setData] = useState([]);
   const [editedData, setEditedData] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -43,7 +37,6 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingRows, setEditingRows] = useState(new Set());
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [uploadRowIndex, setUploadRowIndex] = useState(-1);
   const [attachmentUploadRow, setAttachmentUploadRow] = useState(null);
   useEffect(() => {
     const newData = getInitialData();
@@ -96,44 +89,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     }
   };
 
-  const handleSave = async () => {
-    try {
-      setIsSaving(true);
-      setSaveError("");
-      // Convert File objects/arrays to serializable values (filenames)
-      const sanitizeValue = (v) => {
-        if (Array.isArray(v))
-          return v.map((x) => (x instanceof File ? x.name : x));
-        return v instanceof File ? v.name : v || null;
-      };
-      const sanitizedRows = (editedData || []).map((r) => ({
-        ...r,
-        attachment: sanitizeValue(r.attachment),
-        notes: r.notes, // Keep as array of strings
-      }));
-      const payload = {
-        filename: content?.file_name || "edited_data.xlsx",
-        rows: sanitizedRows,
-      };
-      await postRequest("/user/file/upload/", payload);
-      setData(editedData?.map((r) => ({ ...r })) || []);
-      if (typeof onSaved === "function") onSaved(true);
-    } catch (error) {
-      setSaveError(
-        error.message || "Failed to save changes. Please try again."
-      );
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   const handleCancel = () => {
     if (typeof onCancel === "function") onCancel();
-  };
-
-  const handleReset = () => {
-    setEditedData(data?.map((r) => ({ ...r })) || []);
-    setSaveError("");
   };
 
   const isFieldEmpty = (row, field) => {
@@ -158,8 +115,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     setSearchTerm("");
   };
 
-  const isUrl = (value) =>
-    typeof value === "string" && /^https?:\/\//i.test(value);
+  const isUrl = (value) => typeof value === "string" && /^https?:\/\//i.test(value);
   const isRowEditing = (indexOnPage) => editingRows.has(offset + indexOnPage);
   const toggleRowEditing = async (indexOnPage) => {
     if (isRowEditing(indexOnPage)) {
@@ -192,7 +148,6 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     const globalIndex = currentPage * rowsPerPage + indexOnPage;
     const row = filteredData[globalIndex];
     setAttachmentUploadRow(row);
-    // setUploadRowIndex(indexOnPage);
     setIsUploadOpen(true);
   };
 
@@ -219,7 +174,6 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
       });
     }
     setIsUploadOpen(false);
-    setUploadRowIndex(-1);
   };
 
   const renderNotesDisplay = (notesCount) => {
