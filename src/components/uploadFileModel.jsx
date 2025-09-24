@@ -18,7 +18,12 @@ const columns = [
   // { key: "attachment_link", label: "Attachment Link", type: "text" },
 ];
 
-export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) => {
+export const UploadCompaniesFileModel = ({
+  isOpen,
+  onClose,
+  onOpen,
+  content,
+}) => {
   // Get data from content prop or fallback to generated data
   const getInitialData = () => {
     if (
@@ -35,6 +40,10 @@ export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) =
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
+  // Tabs: valid vs missing
+  const missingRows = content?.missing_data_rows || [];
+  const [activeTab, setActiveTab] = useState("valid"); // "valid" | "missing"
+
   // Update data when content prop changes
   useEffect(() => {
     const newData = getInitialData();
@@ -47,8 +56,9 @@ export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) =
   const [currentPage, setCurrentPage] = useState(0);
 
   const offset = currentPage * rowsPerPage;
-  const currentRows = editedData?.slice(offset, offset + rowsPerPage) || [];
-  const pageCount = Math.ceil((editedData?.length || 0) / rowsPerPage);
+  const workingSet = activeTab === "valid" ? editedData || [] : missingRows;
+  const currentRows = workingSet.slice(offset, offset + rowsPerPage);
+  const pageCount = Math.ceil((workingSet.length || 0) / rowsPerPage) || 1;
 
   // Get issues from content
   const issues = content?.issues || {};
@@ -57,6 +67,7 @@ export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) =
   const capNote = content?.cap_note || "";
 
   const handleChange = (indexOnPage, field, value) => {
+    if (activeTab !== "valid") return; // read-only in missing tab
     const globalIndex = currentPage * rowsPerPage + indexOnPage;
     setEditedData((prev) => {
       const copy = [...(prev || [])];
@@ -70,7 +81,7 @@ export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) =
       setIsSaving(true);
       setSaveError("");
 
-      // Prepare the payload
+      // Prepare the payload (only valid edited rows)
       const payload = {
         filename: content?.file_name || "edited_data.xlsx", // Use filename from content or default
         rows: editedData || [],
@@ -126,7 +137,7 @@ export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) =
   // Show loading state if no data
   if (!editedData || editedData.length === 0) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm bg-opacity-50 z-50">
         <Loader isVisible={isSaving} messages={messages} />
         <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
           <div className="flex justify-between items-center mb-4">
@@ -165,6 +176,38 @@ export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) =
           </button>
         </div>
 
+        {/* Tabs */}
+        <div className="mb-4 border-b border-gray-200">
+          <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+            <button
+              onClick={() => {
+                setActiveTab("valid");
+                setCurrentPage(0);
+              }}
+              className={`${
+                activeTab === "valid"
+                  ? "border-gray-600 text-gray-900"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              } whitespace-nowrap py-2 px-1 border-b-2 text-sm font-medium`}
+            >
+              Rows ({editedData?.length || 0})
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab("missing");
+                setCurrentPage(0);
+              }}
+              className={`${
+                activeTab === "missing"
+                  ? "border-red-600 text-red-700"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              } whitespace-nowrap py-2 px-1 border-b-2 text-sm font-medium`}
+            >
+              Missing ({missingRows.length})
+            </button>
+          </nav>
+        </div>
+
         {/* Save Error Message */}
         {saveError && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -187,7 +230,7 @@ export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) =
 
         {/* Issues Summary - Show at top if issues exist */}
         {issuesExist && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
                 <svg
@@ -227,8 +270,23 @@ export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) =
           </div>
         )}
 
+        {/* Missing rows info */}
+        {missingRows.length > 0 && (
+          <div
+            className={`mb-4 p-3 rounded-lg border text-sm ${
+              activeTab === "missing"
+                ? "bg-yellow-50 border-yellow-200 text-yellow-800"
+                : "bg-blue-50 border-blue-200 text-blue-800"
+            }`}
+          >
+            {activeTab === "missing"
+              ? "These rows have missing required fields and will NOT be included when you save. Fix your source file and re-upload if you need them imported."
+              : `Missing rows detected (${missingRows.length}). They won’t be saved. Review them in the Missing tab.`}
+          </div>
+        )}
+
         {/* Table */}
-        <div className="overflow-x-auto max-h-[60vh] overflow-y-auto border rounded-md">
+        <div className="overflow-x-auto max-h-[40vh] overflow-y-auto border rounded-md">
           <table className="min-w-full border-collapse text-sm">
             <thead className="bg-gray-50 sticky top-0 text-xs uppercase">
               <tr>
@@ -238,7 +296,7 @@ export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) =
                     className="border border-gray-200 p-2 text-left font-medium text-gray-600"
                   >
                     {c.label}
-                    {getFieldIssues(c.key) && (
+                    {activeTab === "valid" && getFieldIssues(c.key) && (
                       <span
                         className="ml-1 text-red-500"
                         title={getFieldIssues(c.key)}
@@ -258,6 +316,7 @@ export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) =
                     const isEmpty = isFieldEmpty(row, c.key);
                     const hasFieldIssue = getFieldIssues(c.key);
                     const isWebsite = c.key === "website";
+                    const readOnly = activeTab === "missing";
 
                     return (
                       <td
@@ -273,14 +332,23 @@ export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) =
                                 handleChange(idx, c.key, e.target.value)
                               }
                               title={row[c.key] ?? ""}
+                              readOnly={readOnly}
                               className={`w-full border pr-9 px-2 py-1 rounded text-sm focus:ring focus:ring-gray-200 ${
-                                isEmpty || hasFieldIssue
+                                activeTab === "missing"
+                                  ? "border-gray-300 bg-white"
+                                  : isEmpty || hasFieldIssue
                                   ? "border-red-300 bg-red-50 focus:ring-red-200"
                                   : "border-gray-300"
-                              }`}
-                              placeholder={isEmpty ? "Required field" : ""}
+                              } ${readOnly ? "cursor-not-allowed" : ""}`}
+                              placeholder={
+                                isEmpty
+                                  ? activeTab === "missing"
+                                    ? ""
+                                    : "Required field"
+                                  : ""
+                              }
                             />
-                            {row[c.key] && (
+                            {row[c.key] && !readOnly && (
                               <a
                                 href={normalizeUrl(row[c.key])}
                                 target="_blank"
@@ -306,15 +374,24 @@ export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) =
                             onChange={(e) =>
                               handleChange(idx, c.key, e.target.value)
                             }
+                            readOnly={readOnly}
                             className={`w-full border px-2 py-1 rounded text-sm focus:ring focus:ring-gray-200 ${
-                              isEmpty || hasFieldIssue
+                              activeTab === "missing"
+                                ? "border-gray-300 bg-white"
+                                : isEmpty || hasFieldIssue
                                 ? "border-red-300 bg-red-50 focus:ring-red-200"
                                 : "border-gray-300"
-                            }`}
-                            placeholder={isEmpty ? "Required field" : ""}
+                            } ${readOnly ? "cursor-not-allowed" : ""}`}
+                            placeholder={
+                              isEmpty
+                                ? activeTab === "missing"
+                                  ? ""
+                                  : "Required field"
+                                : ""
+                            }
                           />
                         )}
-                        {isEmpty && (
+                        {false && (
                           <div className="text-xs text-red-500 mt-1">
                             Empty field
                           </div>

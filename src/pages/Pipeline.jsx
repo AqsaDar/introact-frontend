@@ -40,7 +40,6 @@ function Pipeline() {
   const [companies, setCompanies] = useState([]);
 
   useEffect(() => {
-
     const fetchCompanies = async () => {
       try {
         setLoading(true);
@@ -172,7 +171,6 @@ function Pipeline() {
 
     return (
       <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
-        
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -352,19 +350,6 @@ function Pipeline() {
             <p className="mt-2 text-gray-600">
               Track your leads through the AI-powered outreach process
             </p>
-            <div className="mt-4 flex items-center space-x-4 text-sm text-gray-500">
-              <span>Total: {companies.length} companies</span>
-              <span>•</span>
-              <span>
-                Critical:{" "}
-                {companies.filter((c) => c.priority === "critical").length}
-              </span>
-              <span>•</span>
-              <span>
-                High Priority:{" "}
-                {companies.filter((c) => c.priority === "high").length}
-              </span>
-            </div>
           </div>
 
           <button
@@ -374,6 +359,55 @@ function Pipeline() {
             <Settings className="w-4 h-4 mr-2" />
             Configure Call Questions
           </button>
+        </div>
+
+        {/* Top Stats Cards */}
+        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Companies
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {companies.length}
+                </p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Users className="h-6 w-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Critical</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {companies.filter((c) => c.priority === "critical").length}
+                </p>
+              </div>
+              <div className="p-3 bg-red-100 rounded-lg">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  High Priority
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {companies.filter((c) => c.priority === "high").length}
+                </p>
+              </div>
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <Star className="h-6 w-6 text-orange-600" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Pipeline Stages */}
@@ -454,71 +488,6 @@ function Pipeline() {
                   )}
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Pipeline Stats */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Companies
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {companies.length}
-                </p>
-              </div>
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">In Progress</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {
-                    companies.filter((c) =>
-                      [1, 2, 3, 4, 5].includes(c.stage?.order)
-                    ).length
-                  }
-                </p>
-              </div>
-              <div className="p-3 bg-yellow-100 rounded-lg">
-                <Clock className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {companies.filter((c) => c.stage?.order === 6).length}
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Success Rate
-                </p>
-                <p className="text-2xl font-bold text-gray-900">85%</p>
-              </div>
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <BarChart3 className="h-6 w-6 text-purple-600" />
-              </div>
             </div>
           </div>
         </div>

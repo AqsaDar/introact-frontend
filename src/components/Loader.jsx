@@ -25,10 +25,10 @@ export const Loader = ({ isVisible, message = "Loading...", messages = [], curre
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop with blur */}
-      <div className="absolute inset-0 bg-opacity-60 backdrop-blur-sm"></div>
+      <div className="absolute inset-0 bg-opacity-60 backdrop-blur-[2px]"></div>
       
       {/* Loader content */}
-      <div className="relative rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4">
+      <div className="relative p-8 max-w-sm w-full mx-4">
         <div className="text-center">
           {/* Spinner */}
           <div className="relative mx-auto w-16 h-16 mb-6">

@@ -247,9 +247,14 @@ export const Upload = () => {
             },
           }
         );
-        setPreviewData({ ...response.data, file_name: file.name });
-        setIsModalOpen(true);
+        if (response?.data?.rows?.length > 0) {
+          setPreviewData({ ...response.data, file_name: file.name });
+          setIsModalOpen(true);
+        } else {
+          toast.error("invalid file data");
+        }
       } catch (error) {
+        toast.error(error.message);
         console.error("Upload error:", error);
       } finally {
         setLoading(false);
@@ -540,7 +545,7 @@ export const Upload = () => {
 
                           <button
                             onClick={() => handlePreviewClick(file)}
-                            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                            className="p-2 cursor-pointer text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
                             disabled={isUploading}
                           >
                             <Eye className="w-4 h-4" color="blue" />
@@ -548,7 +553,7 @@ export const Upload = () => {
 
                           <button
                             onClick={() => openDeleteModal(file)}
-                            className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-gray-100"
+                            className="p-2 cursor-pointer text-red-500 hover:text-red-600 rounded-lg hover:bg-gray-100"
                             disabled={isUploading}
                           >
                             <X className="w-4 h-4" color="red" />
@@ -559,7 +564,7 @@ export const Upload = () => {
                       <div className="mt-4 flex items-center space-x-3">
                         <button
                           onClick={() => validateFile(file.id)}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                          className="inline-flex cursor-pointer items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                           disabled={isUploading}
                         >
                           <RefreshCw className="w-4 h-4 mr-1" />
