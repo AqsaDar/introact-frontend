@@ -102,6 +102,16 @@ function Dashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+       <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Dashboard
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Welcome to the dashboard
+          </p>
+        </div>
+      </div>
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 mb-8">
         {stats.map((stat, index) => (

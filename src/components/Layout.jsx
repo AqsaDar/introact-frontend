@@ -123,7 +123,7 @@ function Layout({ children }) {
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <div className="ml-3 lg:ml-0">
+              {/* <div className="ml-3 lg:ml-0">
                 <h1 className="text-2xl font-bold text-gray-900">
                   {navigation.find((item) => item.href === location.pathname)
                     ?.name || "AI Outreach"}
@@ -132,7 +132,7 @@ function Layout({ children }) {
                   {navigation.find((item) => item.href === location.pathname)
                     ?.description || "Automation Platform"}
                 </p>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex items-center space-x-3">
