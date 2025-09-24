@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { getRequest, postRequest, putRequest } from "../utils/httpClient";
 import Loader from "./Loader";
-import { TempUploadModal } from "./temp_upload_modal";
+import { AddNotesAndFileModel } from "./AddNotesAndFileModel";
 
 const columns = [
   { key: "company_name", label: "Company Name", type: "text" },
@@ -835,7 +835,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
         </div>
       </div>
       {/* Upload Modal */}
-      <TempUploadModal
+      <AddNotesAndFileModel
         closeUploadModal={closeUploadModal}
         isUploadOpen={isUploadOpen}
         row={attachmentUploadRow}

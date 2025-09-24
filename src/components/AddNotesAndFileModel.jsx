@@ -3,7 +3,7 @@ import { deleteRequest, postRequest, uploadFile } from "../utils/httpClient";
 import Loader from "./Loader";
 import { X, Check } from "lucide-react";
 
-export const TempUploadModal = ({
+export const AddNotesAndFileModel = ({
   isUploadOpen,
   closeUploadModal,
   row,

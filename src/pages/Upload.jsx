@@ -10,11 +10,18 @@ import {
 } from "lucide-react";
 import React, { useCallback, useState, useEffect } from "react";
 import Papa from "papaparse";
-import { uploadFile, getRequest, postRequest } from "../utils/httpClient";
-import { EditableUploadedModal } from "../components/uploadedCompanyModel";
+import {
+  uploadFile,
+  getRequest,
+  postRequest,
+  deleteRequest,
+} from "../utils/httpClient";
+import { UploadCompaniesFileModel } from "../components/uploadFileModel";
 import Loader from "../components/Loader";
 import { messages, resetFileInput } from "../utils/data";
 import PreviewOrEditCompany from "../components/PreviewOrEditCompany";
+import { toast } from "react-toastify";
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 
 export const Upload = () => {
   const [files, setFiles] = useState([]);
@@ -26,6 +33,8 @@ export const Upload = () => {
   const [preview, setPreview] = useState(false);
   // Modal state management
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Delete confirmation modal state
+  const [deleteModal, setDeleteModal] = useState({ open: false, file: null });
 
   // Fetch files from API on component mount
   useEffect(() => {
@@ -240,56 +249,8 @@ export const Upload = () => {
         );
         setPreviewData({ ...response.data, file_name: file.name });
         setIsModalOpen(true);
-        // Update file with API response
-        // setFiles((prev) =>
-        //   prev.map((f) =>
-        //     f.id === fileId
-        //       ? {
-        //           ...f,
-        //           status: "processing",
-        //           companiesCount:
-        //             response.companies_count ||
-        //             Math.floor(Math.random() * 200) + 50,
-        //           errors: response.errors || [],
-        //         }
-        //       : f
-        //   )
-        // );
-
-        // Simulate processing completion after API upload
-        // setTimeout(() => {
-        //   setFiles((prev) =>
-        //     prev.map((f) =>
-        //       f.id === fileId
-        //         ? {
-        //             ...f,
-        //             status: "validated",
-        //             validCount:
-        //               f.companiesCount - Math.floor(Math.random() * 5),
-        //             errors:
-        //               f.errors.length > 0
-        //                 ? f.errors
-        //                 : ["Missing phone number for 2 companies"],
-        //           }
-        //         : f
-        //     )
-        //   );
-        // }, 2000);
       } catch (error) {
         console.error("Upload error:", error);
-
-        // Update file with error status
-        // setFiles((prev) =>
-        //   prev.map((f) =>
-        //     f.id === fileId
-        //       ? {
-        //           ...f,
-        //           status: "error",
-        //           errors: [error.message || "Upload failed. Please try again."],
-        //         }
-        //       : f
-        //   )
-        // );
       } finally {
         setLoading(false);
         setUploadingFiles((prev) => {
@@ -365,8 +326,31 @@ export const Upload = () => {
     }
   };
 
-  const removeFile = (fileId) => {
-    setFiles((prev) => prev.filter((file) => file.id !== fileId));
+  const removeFile = async (fileId) => {
+    try {
+      setLoading(true);
+      const response = await deleteRequest(`user/file/delete/?id=${fileId}`);
+      if (response.status === 200) {
+        toast.success(response.data.message);
+        setFiles((prev) => prev.filter((file) => file.id !== fileId));
+      }
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      toast.error(error.message);
+    }
+  };
+
+  const openDeleteModal = (file) => {
+    setDeleteModal({ open: true, file });
+  };
+  const closeDeleteModal = () => {
+    setDeleteModal({ open: false, file: null });
+  };
+  const confirmDelete = async () => {
+    const id = deleteModal.file?.id;
+    closeDeleteModal();
+    if (id) await removeFile(id);
   };
 
   const getStatusColor = (status) => {
@@ -412,7 +396,7 @@ export const Upload = () => {
         />
       ) : (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Loader isVisible={loading} messages={messages} />
+          <Loader isVisible={loading} />
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Upload Files</h1>
@@ -449,7 +433,7 @@ export const Upload = () => {
                 multiple
                 id="uploadFile"
                 accept=".xlsx,.xls,.csv"
-                onChange={(e)=>handleChange(e, 'uploadFile')}
+                onChange={(e) => handleChange(e, "uploadFile")}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
 
@@ -472,7 +456,7 @@ export const Upload = () => {
           </div>
 
           {/* Modal Component - now controlled by Upload component */}
-          <EditableUploadedModal
+          <UploadCompaniesFileModel
             isOpen={isModalOpen}
             onClose={closeModal}
             onOpen={openModal}
@@ -559,15 +543,15 @@ export const Upload = () => {
                             className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
                             disabled={isUploading}
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-4 h-4" color="blue" />
                           </button>
 
                           <button
-                            onClick={() => removeFile(file.id)}
+                            onClick={() => openDeleteModal(file)}
                             className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-gray-100"
                             disabled={isUploading}
                           >
-                            <X className="w-4 h-4" />
+                            <X className="w-4 h-4" color="red" />
                           </button>
                         </div>
                       </div>
@@ -603,6 +587,13 @@ export const Upload = () => {
               </div>
             </div>
           )}
+
+          <ConfirmDeleteModal
+            isOpen={deleteModal.open}
+            fileName={deleteModal.file?.name}
+            onCancel={closeDeleteModal}
+            onConfirm={confirmDelete}
+          />
         </div>
       )}
     </div>

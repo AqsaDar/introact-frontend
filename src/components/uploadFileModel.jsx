@@ -18,7 +18,7 @@ const columns = [
   // { key: "attachment_link", label: "Attachment Link", type: "text" },
 ];
 
-export const EditableUploadedModal = ({ isOpen, onClose, onOpen, content }) => {
+export const UploadCompaniesFileModel = ({ isOpen, onClose, onOpen, content }) => {
   // Get data from content prop or fallback to generated data
   const getInitialData = () => {
     if (
