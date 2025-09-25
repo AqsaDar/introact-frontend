@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { postRequest } from "../utils/httpClient";
 import Loader from "./Loader";
 import { messages } from "../utils/data";
+import { toast } from "react-toastify";
 
 const columns = [
   { key: "company_name", label: "Company Name", type: "text" },
@@ -95,8 +96,8 @@ export const UploadCompaniesFileModel = ({
       };
       // Call the save API
       const response = await postRequest("/user/file/upload/", payload);
-
       // Update local data with the saved data
+      toast.success("File uploaded successfully");
       setData(editedData?.map((r) => ({ ...r })) || []);
 
       // Close modal on successful save
