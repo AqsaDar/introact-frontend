@@ -209,8 +209,9 @@ export const AddNotesAndFileModel = ({
             )}
           </div>
           {/* attachment file name */}
-          <span className="text-sm text-gray-500">
-            {attachment.id == "0" ? attachment?.file?.name : attachment?.file}
+          <span className="text-sm text-gray-500 break-words" style={{wordBreak: "break-word"}}>
+            {attachment.id == "0" 
+            ? attachment?.file?.name : <a href={attachment?.file} className="text-blue-500" target="_blank" rel="noopener noreferrer">{attachment?.file}</a>}
           </span>
           {/* attachment save */}
           {attachment.id === "0" && attachment.file && (
@@ -290,7 +291,7 @@ export const AddNotesAndFileModel = ({
             <div>
               <div className="flex items-center justify-between mb-4">
                 <label className="block text-lg font-semibold text-gray-700">
-                  Attachment files (PDF)
+                  Attachment files (PDF/xlsx)
                 </label>
                 <button
                   onClick={addAttachment}

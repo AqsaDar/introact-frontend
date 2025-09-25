@@ -2,19 +2,20 @@ import React, { useEffect, useState, useMemo } from "react";
 import { getRequest, postRequest, putRequest } from "../utils/httpClient";
 import Loader from "./Loader";
 import { AddNotesAndFileModel } from "./AddNotesAndFileModel";
+import { Plus } from "lucide-react";
 
 const columns = [
-  { key: "company_name", label: "Company Name", type: "text" },
+  { key: "company_name", label: "CompanyName", type: "text" },
   { key: "website", label: "Website", type: "url" },
   { key: "industry", label: "Industry", type: "text" },
-  { key: "revenue", label: "Revenue (USD M)", type: "number" },
+  { key: "revenue", label: "Revenue(USD M)", type: "number" },
   { key: "employees", label: "Employees", type: "number" },
-  { key: "hq_location", label: "HQ Location", type: "text" },
-  { key: "contact_person", label: "Contact Person", type: "text" },
+  { key: "hq_location", label: "HQ-Location", type: "text" },
+  { key: "contact_person", label: "ContactPerson", type: "text" },
   { key: "email", label: "Email", type: "email" },
   { key: "phone", label: "Phone", type: "tel" },
   { key: "notes_count", label: "Notes", type: "text" },
-  { key: "attachments_count", label: "Attachment (PDF)", type: "file" },
+  { key: "attachments_count", label: "Attachment", type: "file" },
 ];
 
 export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
@@ -118,18 +119,19 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   const isUrl = (value) =>
     typeof value === "string" && /^https?:\/\//i.test(value);
   const isRowEditing = (indexOnPage) => editingRows.has(offset + indexOnPage);
-  const toggleRowEditing = async (indexOnPage) => {
+  const toggleRowEditing = async (indexOnPage,row) => {
     if (isRowEditing(indexOnPage)) {
+      let row_to_edit = editedData.filter(r=>r.id == row.id)[0] = row;
       setIsSaving(true);
-      const { notes, attachment, id, ...otherData } = editedData[indexOnPage];
+      const { notes, attachment, id, ...otherData } = row_to_edit;
       let res = await putRequest(
-        `user/companies/${editedData[indexOnPage].id}/`,
+        `user/companies/${row.id}/`,
         { ...otherData }
       );
       if (res.status === 200) {
         setEditedData((prev) => {
           const copy = [...(prev || [])];
-          copy[indexOnPage] = { ...copy[indexOnPage], ...res.data };
+          copy[editedData.findIndex(r=>r.id == row.id)] = { ...copy[editedData.findIndex(r=>r.id == row.id)], ...res.data };
           return copy;
         });
       }
@@ -456,7 +458,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                     {columns.map((c) => (
                       <th
                         key={c.key}
-                        className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider align-top break-words"
+                        style={{whiteSpace: "nowrap"}}
+                        className="px-4 py-3 text-left text-xs font-semibold text-gray-600 tracking-wider align-top break-words"
                       >
                         {c.label}
                         {getFieldIssues(c.key) && (
@@ -469,7 +472,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         )}
                       </th>
                     ))}
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider align-top break-words">
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 tracking-wider align-top break-words">
                       Actions
                     </th>
                   </tr>
@@ -587,7 +590,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                       <td className="px-4 py-3 text-center align-top">
                         <div className="flex flex-wrap items-center justify-center gap-2">
                           <button
-                            onClick={() => toggleRowEditing(idx)}
+                            onClick={() => toggleRowEditing(idx,row)}
                             className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                               isRowEditing(idx)
                                 ? "bg-gray-600 text-white shadow-sm"
@@ -634,20 +637,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                             onClick={() => openUploadModal(idx, "row")}
                             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-gray-600 text-white hover:bg-gray-700 transition-all duration-200"
                           >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 4v16h16M8 12h8M8 8h8M8 16h5"
-                              />
-                            </svg>
-                            Upload
+                            <Plus className="w-4 h-4" />
+                            Add Entry
                           </button>
                         </div>
                       </td>
