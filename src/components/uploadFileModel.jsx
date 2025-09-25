@@ -44,6 +44,13 @@ export const UploadCompaniesFileModel = ({
   const missingRows = content?.missing_data_rows || [];
   const [activeTab, setActiveTab] = useState("valid"); // "valid" | "missing"
 
+  // Ensure we hide/disable the Missing tab when there are no missing rows
+  useEffect(() => {
+    if ((missingRows?.length || 0) === 0 && activeTab !== "valid") {
+      setActiveTab("valid");
+    }
+  }, [missingRows, activeTab]);
+
   // Update data when content prop changes
   useEffect(() => {
     const newData = getInitialData();
@@ -162,7 +169,7 @@ export const UploadCompaniesFileModel = ({
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm bg-opacity-50 z-50">
       <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-7xl p-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
@@ -178,34 +185,40 @@ export const UploadCompaniesFileModel = ({
 
         {/* Tabs */}
         <div className="mb-4 border-b border-gray-200">
-          <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-            <button
-              onClick={() => {
-                setActiveTab("valid");
-                setCurrentPage(0);
-              }}
-              className={`${
-                activeTab === "valid"
-                  ? "border-gray-600 text-gray-900"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              } whitespace-nowrap py-2 px-1 border-b-2 text-sm font-medium`}
-            >
+          {missingRows.length > 0 ? (
+            <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+              <button
+                onClick={() => {
+                  setActiveTab("valid");
+                  setCurrentPage(0);
+                }}
+                className={`${
+                  activeTab === "valid"
+                    ? "border-gray-600 text-gray-900"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                } whitespace-nowrap py-2 px-1 border-b-2 text-sm font-medium`}
+              >
+                Rows ({editedData?.length || 0})
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("missing");
+                  setCurrentPage(0);
+                }}
+                className={`${
+                  activeTab === "missing"
+                    ? "border-red-600 text-red-700"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                } whitespace-nowrap py-2 px-1 border-b-2 text-sm font-medium`}
+              >
+                Missing ({missingRows.length})
+              </button>
+            </nav>
+          ) : (
+            <div className="py-2 text-sm text-gray-600">
               Rows ({editedData?.length || 0})
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab("missing");
-                setCurrentPage(0);
-              }}
-              className={`${
-                activeTab === "missing"
-                  ? "border-red-600 text-red-700"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              } whitespace-nowrap py-2 px-1 border-b-2 text-sm font-medium`}
-            >
-              Missing ({missingRows.length})
-            </button>
-          </nav>
+            </div>
+          )}
         </div>
 
         {/* Save Error Message */}
@@ -296,14 +309,6 @@ export const UploadCompaniesFileModel = ({
                     className="border border-gray-200 p-2 text-left font-medium text-gray-600"
                   >
                     {c.label}
-                    {activeTab === "valid" && getFieldIssues(c.key) && (
-                      <span
-                        className="ml-1 text-red-500"
-                        title={getFieldIssues(c.key)}
-                      >
-                        ⚠️
-                      </span>
-                    )}
                   </th>
                 ))}
               </tr>
@@ -333,13 +338,9 @@ export const UploadCompaniesFileModel = ({
                               }
                               title={row[c.key] ?? ""}
                               readOnly={readOnly}
-                              className={`w-full border pr-9 px-2 py-1 rounded text-sm focus:ring focus:ring-gray-200 ${
-                                activeTab === "missing"
-                                  ? "border-gray-300 bg-white"
-                                  : isEmpty || hasFieldIssue
-                                  ? "border-red-300 bg-red-50 focus:ring-red-200"
-                                  : "border-gray-300"
-                              } ${readOnly ? "cursor-not-allowed" : ""}`}
+                              className={`w-full border pr-9 px-2 py-1 rounded text-sm focus:ring focus:ring-gray-200 border-gray-300 ${
+                                readOnly ? "cursor-not-allowed" : ""
+                              }`}
                               placeholder={
                                 isEmpty
                                   ? activeTab === "missing"
@@ -375,13 +376,9 @@ export const UploadCompaniesFileModel = ({
                               handleChange(idx, c.key, e.target.value)
                             }
                             readOnly={readOnly}
-                            className={`w-full border px-2 py-1 rounded text-sm focus:ring focus:ring-gray-200 ${
-                              activeTab === "missing"
-                                ? "border-gray-300 bg-white"
-                                : isEmpty || hasFieldIssue
-                                ? "border-red-300 bg-red-50 focus:ring-red-200"
-                                : "border-gray-300"
-                            } ${readOnly ? "cursor-not-allowed" : ""}`}
+                            className={`w-full border px-2 py-1 rounded text-sm focus:ring focus:ring-gray-200 border-gray-300 bg-white ${
+                              readOnly ? "cursor-not-allowed" : ""
+                            }`}
                             placeholder={
                               isEmpty
                                 ? activeTab === "missing"
