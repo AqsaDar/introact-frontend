@@ -755,7 +755,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         onClick={() => openUploadModal(idx, "row")}
                         className="flex-1 px-3 py-2 text-xs font-medium bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                       >
-                        Upload
+                        Add Entry
                       </button>
                     </div>
                   </div>
