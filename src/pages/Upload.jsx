@@ -317,7 +317,6 @@ export const Upload = () => {
       const response = await postRequest(`/company/pipelines/`, {
         file: fileId,
       });
-      debugger
       if (response) {
         setFiles((prevFiles) =>
           prevFiles.map((file) =>

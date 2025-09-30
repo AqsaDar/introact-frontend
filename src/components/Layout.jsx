@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -54,19 +54,40 @@ const navigation = [
 
 function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  // Check if screen is mobile on mount and resize
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 1024); // lg breakpoint
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Set initial sidebar state based on screen size
+  useEffect(() => {
+    setSidebarOpen(!isMobile); // Open on desktop, closed on mobile
+  }, [isMobile]);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
+      {sidebarOpen && isMobile && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
             className="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm"
@@ -86,8 +107,8 @@ function Layout({ children }) {
         </div>
       )}
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:flex lg:flex-shrink-0">
+      {/* Desktop sidebar - Always visible on desktop, toggleable */}
+      <div className={`hidden lg:flex lg:flex-shrink-0 transition-all duration-300 ${sidebarOpen ? 'lg:block' : 'lg:hidden'}`}>
         <div className="flex flex-col w-72">
           <SidebarContent onLogout={handleLogout} />
         </div>
@@ -96,11 +117,11 @@ function Layout({ children }) {
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header */}
-        <Header onMenuToggle={() => setSidebarOpen(true)} showMenuButton={true} />
+        <Header onMenuToggle={toggleSidebar} showMenuButton={true} />
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">
-          <div className="py-6">{children}</div>
+          <div className="py-6 h-full">{children}</div>
         </main>
 
         {/* Footer */}
@@ -117,17 +138,17 @@ function SidebarContent({ onLogout }) {
     <div className="flex flex-col flex-1 min-h-0 bg-white border-r border-gray-200">
       {/* Logo Section */}
       <div className="flex items-center flex-shrink-0 px-6 py-8 border-b border-gray-200">
-        <div className="flex items-center w-full">
-          <div className="flex items-center justify-center w-12 h-12 bg-gray-600 rounded-lg">
+        <Link to="/dashboard" className="flex items-center w-full group">
+          <div className="flex items-center justify-center w-12 h-12 bg-gray-600 rounded-lg group-hover:bg-gray-700 transition-colors">
             <Zap className="w-7 h-7 text-white" />
           </div>
           <div className="ml-4">
-            <h2 className="text-xl font-bold text-gray-900">Lead Enrichment System</h2>
+            <h2 className="text-xl font-bold text-gray-900 group-hover:text-gray-950">Lead Enrichment System</h2>
             <p className="text-sm text-gray-500 font-medium">
               Automation Platform
             </p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Navigation */}

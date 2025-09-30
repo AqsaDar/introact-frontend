@@ -62,7 +62,7 @@ export const AddNotesAndFileModel = ({
       setTempNotes(updatedNotes);
       // toast.success("Note saved successfully");
     } else {
-      // toast.error("Failed to save note");
+      toast.error("Failed to save note");
     }
     setLoading(false);
   };

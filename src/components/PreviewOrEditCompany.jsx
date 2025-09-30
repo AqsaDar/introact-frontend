@@ -3,6 +3,7 @@ import { getRequest, postRequest, putRequest } from "../utils/httpClient";
 import Loader from "./Loader";
 import { AddNotesAndFileModel } from "./AddNotesAndFileModel";
 import { Plus } from "lucide-react";
+import { toast } from "react-toastify";
 
 const columns = [
   { key: "company_name", label: "Company Name", type: "text" },
@@ -120,21 +121,28 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     typeof value === "string" && /^https?:\/\//i.test(value);
   const isRowEditing = (indexOnPage) => editingRows.has(offset + indexOnPage);
   const toggleRowEditing = async (indexOnPage,row) => {
-    if (isRowEditing(indexOnPage)) {
-      let row_to_edit = editedData.filter(r=>r.id == row.id)[0] = row;
-      setIsSaving(true);
-      const { notes, attachment, id, ...otherData } = row_to_edit;
-      let res = await putRequest(
-        `user/companies/${row.id}/`,
-        { ...otherData }
-      );
-      if (res.status === 200) {
-        setEditedData((prev) => {
-          const copy = [...(prev || [])];
-          copy[editedData.findIndex(r=>r.id == row.id)] = { ...copy[editedData.findIndex(r=>r.id == row.id)], ...res.data };
-          return copy;
-        });
+    try 
+    {
+        if (isRowEditing(indexOnPage)) {
+        let row_to_edit = editedData.filter(r=>r.id == row.id)[0] = row;
+        setIsSaving(true);
+        const { notes, attachment, id, ...otherData } = row_to_edit;
+        let res = await putRequest(
+          `user/companies/${row?.id}/`,
+          { ...otherData }
+        );
+          setEditedData((prev) => {
+            const copy = [...(prev || [])];
+            copy[editedData.findIndex(r=>r.id == row.id)] = { ...copy[editedData.findIndex(r=>r.id == row.id)], ...res.data };
+            return copy;
+          });
+        setIsSaving(false);
       }
+    }
+    catch (err) {
+      toast.error(err?.message || "Failed to save");
+    }
+    finally {
       setIsSaving(false);
     }
     const globalIndex = offset + indexOnPage;

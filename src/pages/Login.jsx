@@ -35,7 +35,7 @@ function Login() {
 
     try {
       // Make API call to login endpoint
-      const response = await postRequest("/user/login/", {
+      const response = await postRequest("api/token/", {
         email: formData.email,
         password: formData.password,
       });
@@ -56,6 +56,7 @@ function Login() {
       }
     } catch (err) {
       // Handle API errors
+      toast.error(err?.message || "Failed to login");
       console.error("Login error:", err);
 
       if (err.status === 401) {

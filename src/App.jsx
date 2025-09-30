@@ -15,6 +15,7 @@ import Reports from "./pages/Reports";
 import Upload from "./pages/Upload";
 import Kanban from "./pages/Kanban";
 import EmailTemplates from "./pages/EmailTemplates";
+import InviteAnalyst from "./pages/InviteAnalyst";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 // Protected Route component
@@ -43,11 +44,11 @@ const PublicRoute = ({ children }) => {
       </div>
     );
   }
-
   return user ? <Navigate to="/dashboard" replace /> : children;
 };
 
-function AppContent() {
+const AppContent = () => {
+  const { user } = useAuth();
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
@@ -61,7 +62,20 @@ function AppContent() {
               </PublicRoute>
             }
           />
-
+          {user?.is_superadmin ? (
+              <Route
+                path="/invite-analyst"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <InviteAnalyst />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+            ) : (
+              <></>)
+          }
           {/* Protected Routes */}
           <Route
             path="/"

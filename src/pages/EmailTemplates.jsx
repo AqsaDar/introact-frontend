@@ -264,6 +264,7 @@ If you prefer not to receive emails like this, click {{unsubscribeLink}}.`;
       setSaveMsg("Saved successfully");
     } catch (err) {
       setSaveMsg(err?.message || "Failed to save");
+      toast.error(err?.message || "Failed to save");
     } finally {
       setIsSaving(false);
       setTimeout(() => setSaveMsg(""), 3000);

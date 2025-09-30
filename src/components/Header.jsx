@@ -49,14 +49,14 @@ const Header = ({ onMenuToggle, showMenuButton = false }) => {
       <div className="flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         {/* Left side - Logo and Menu */}
         <div className="flex items-center">
-          {/* {showMenuButton && (
+          {showMenuButton && (
             <button
               onClick={onMenuToggle}
               className="text-gray-500 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-100 transition-colors mr-3"
             >
               <Menu className="w-6 h-6" />
             </button>
-          )} */}
+          )}
           
           {/* Logo - Only show on login page */}
           {showBranding && (
@@ -116,6 +116,21 @@ const Header = ({ onMenuToggle, showMenuButton = false }) => {
                     <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                       <Settings className="w-4 h-4 mr-3 text-gray-400" />
                       Preferences
+                    </button>
+                    <button
+                      onClick={() => navigate('/invite-analyst')}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    >
+                      {
+                        user.is_superadmin ? (
+                          <>
+                            <svg className="w-4 h-4 mr-3 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                            Invite Analyst
+                          </>
+                        ) : (
+                          <></>
+                        )
+                      }
                     </button>
                   </div>
 

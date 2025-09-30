@@ -27,7 +27,7 @@ import React from "react";
 function Dashboard() {
   const stats = [
     {
-      title: "Total Files Uploaded",
+      title: "Total Companies",
       value: dashboardStats.totalUploads,
       icon: FileText,
       color: "bg-blue-500",

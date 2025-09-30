@@ -104,6 +104,7 @@ export const UploadCompaniesFileModel = ({
       onClose(true);
     } catch (error) {
       console.error("Error saving data:", error);
+      toast.error(error?.message);
       setSaveError(
         error.message || "Failed to save changes. Please try again."
       );
