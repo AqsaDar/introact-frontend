@@ -77,7 +77,7 @@ http.interceptors.response.use(
       try {
         // Call refresh API
         const response = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL || '/api'}user/api/refresh/`,
+          `${import.meta.env.VITE_API_BASE_URL || '/api'}api/token/refresh/`,
           { refresh: localStorage.getItem('refresh') }
         );
 
