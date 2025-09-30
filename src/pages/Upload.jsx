@@ -317,6 +317,7 @@ export const Upload = () => {
       const response = await postRequest(`/company/pipelines/`, {
         file: fileId,
       });
+      debugger
       if (response) {
         setFiles((prevFiles) =>
           prevFiles.map((file) =>
@@ -327,6 +328,7 @@ export const Upload = () => {
       setLoading(false);
     } catch (error) {
       setLoading(false);
+      toast.error(error.message);
       console.error("Add to pipeline error:", error);
     }
   };
@@ -500,8 +502,8 @@ export const Upload = () => {
                               {file.name}
                             </h4>
                             <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
-                              <span>{file.size}</span>
-                              <span>•</span>
+                              {/* <span>{file.size}</span> */}
+                              {/* <span>•</span> */}
                               <span>Uploaded {file.uploadDate}</span>
                               {file.companiesCount > 0 && (
                                 <>
@@ -562,14 +564,14 @@ export const Upload = () => {
                       </div>
 
                       <div className="mt-4 flex items-center space-x-3">
-                        <button
+                        {/* <button
                           onClick={() => validateFile(file.id)}
                           className="inline-flex cursor-pointer items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                           disabled={isUploading}
                         >
                           <RefreshCw className="w-4 h-4 mr-1" />
                           Re-validate
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => addToPipeline(file.id)}
                           className="inline-flex items-center px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-sm font-medium rounded-md text-white transition-colors"

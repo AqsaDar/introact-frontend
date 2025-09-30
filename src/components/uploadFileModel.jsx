@@ -9,7 +9,7 @@ const columns = [
   { key: "company_name", label: "Company Name", type: "text" },
   { key: "website", label: "Website", type: "url" },
   { key: "industry", label: "Industry", type: "text" },
-  { key: "revenue", label: "Revenue (USD M)", type: "number" },
+  { key: "revenue", label: "Revenue($)", type: "number" },
   { key: "employees", label: "Employees", type: "number" },
   { key: "hq_location", label: "HQ Location", type: "text" },
   { key: "contact_person", label: "Contact Person", type: "text" },
@@ -60,7 +60,7 @@ export const UploadCompaniesFileModel = ({
     setCurrentPage(0); // Reset to first page when data changes
   }, [content]);
 
-  const rowsPerPage = 500; // 👈 reduced to 500
+  const rowsPerPage = 1000; // 👈 reduced to 500
   const [currentPage, setCurrentPage] = useState(0);
 
   const offset = currentPage * rowsPerPage;
@@ -302,7 +302,7 @@ export const UploadCompaniesFileModel = ({
         {/* Table */}
         <div className="overflow-x-auto max-h-[40vh] overflow-y-auto border rounded-md">
           <table className="min-w-full border-collapse text-sm">
-            <thead className="bg-gray-50 sticky top-0 text-xs uppercase">
+            <thead className="bg-gray-50 sticky top-0 text-[11px]">
               <tr>
                 {columns.map((c) => (
                   <th

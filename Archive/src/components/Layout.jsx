@@ -65,7 +65,7 @@ function Layout({ children }) {
               </button>
               <div className="ml-3 lg:ml-0">
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                  {navigation.find(item => item.href === location.pathname)?.name || 'AI Outreach'}
+                  {navigation.find(item => item.href === location.pathname)?.name || 'Lead Enrichment System'}
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">
                   {navigation.find(item => item.href === location.pathname)?.description || 'Automation Platform'}
@@ -111,7 +111,7 @@ function SidebarContent() {
           </div>
           <div className="ml-4">
             <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-              AI Outreach
+            Lead Enrichment System
             </h2>
             <p className="text-sm text-gray-500 font-medium">Automation Platform</p>
           </div>

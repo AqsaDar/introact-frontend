@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -8,7 +8,6 @@ import {
   Menu,
   X,
   Zap,
-  Settings,
   User,
   ChevronRight,
   LogOut,
@@ -17,6 +16,8 @@ import {
   Mail,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import Header from "./Header";
+import Footer from "./Footer";
 
 const navigation = [
   {
@@ -53,8 +54,6 @@ const navigation = [
 
 function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
-  const settingsMenuRef = useRef(null);
   const location = useLocation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -63,23 +62,6 @@ function Layout({ children }) {
     logout();
     navigate("/login");
   };
-
-  // Close settings menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        settingsMenuRef.current &&
-        !settingsMenuRef.current.contains(event.target)
-      ) {
-        setSettingsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -99,7 +81,7 @@ function Layout({ children }) {
                 <X className="w-6 h-6 text-white" />
               </button>
             </div>
-            <SidebarContent />
+            <SidebarContent onLogout={handleLogout} />
           </div>
         </div>
       )}
@@ -107,108 +89,29 @@ function Layout({ children }) {
       {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:flex-shrink-0">
         <div className="flex flex-col w-72">
-          <SidebarContent />
+          <SidebarContent onLogout={handleLogout} />
         </div>
       </div>
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-            <div className="flex items-center">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="text-gray-500 hover:text-gray-600 lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-              {/* <div className="ml-3 lg:ml-0">
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {navigation.find((item) => item.href === location.pathname)
-                    ?.name || "AI Outreach"}
-                </h1>
-                <p className="text-sm text-gray-500 mt-1">
-                  {navigation.find((item) => item.href === location.pathname)
-                    ?.description || "Automation Platform"}
-                </p>
-              </div> */}
-            </div>
-
-            <div className="flex items-center space-x-3">
-              {/* User Avatar + Settings Dropdown */}
-              <div className="relative" ref={settingsMenuRef}>
-                <button
-                  onClick={() => setSettingsMenuOpen(!settingsMenuOpen)}
-                  className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-100"
-                  aria-label="User menu"
-                >
-                  <div className="w-10 h-10 bg-gray-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <User className="w-5 h-5 text-white" />
-                  </div>
-                  <ChevronDown
-                    className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-                      settingsMenuOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {settingsMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
-                    {/* <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">
-                        Account
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Manage your profile
-                      </p>
-                    </div> */}
-
-                    {/* <div className="py-1">
-                      <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                        <User className="w-4 h-4 mr-3 text-gray-400" />
-                        Profile Settings
-                      </button>
-                      <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                        <Settings className="w-4 h-4 mr-3 text-gray-400" />
-                        Preferences
-                      </button>
-                    </div> */}
-
-                    <div className="border-t border-gray-100 py-1">
-                      <button
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
-                      >
-                        <LogOut className="w-4 h-4 mr-3" />
-                        Sign Out
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
+        {/* Header */}
+        <Header onMenuToggle={() => setSidebarOpen(true)} showMenuButton={true} />
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">
           <div className="py-6">{children}</div>
         </main>
+
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   );
 }
 
-function SidebarContent() {
+function SidebarContent({ onLogout }) {
   const location = useLocation();
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const signOut = () => {
-    logout();
-    navigate("/login");
-  };
 
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-white border-r border-gray-200">
@@ -219,7 +122,7 @@ function SidebarContent() {
             <Zap className="w-7 h-7 text-white" />
           </div>
           <div className="ml-4">
-            <h2 className="text-xl font-bold text-gray-900">AI Outreach</h2>
+            <h2 className="text-xl font-bold text-gray-900">Lead Enrichment System</h2>
             <p className="text-sm text-gray-500 font-medium">
               Automation Platform
             </p>
@@ -261,13 +164,6 @@ function SidebarContent() {
                   <span className="block font-semibold">{item.name}</span>
                 </div>
               </div>
-              {/* <ChevronDown
-                className={`h-4 w-4 transition-all duration-200 ${
-                  isActive
-                    ? "text-gray-900"
-                    : "text-gray-400 group-hover:text-gray-600"
-                }`}
-              /> */}
             </Link>
           );
         })}
@@ -276,7 +172,7 @@ function SidebarContent() {
       {/* Bottom actions */}
       <div className="flex items-center justify-center p-4 rounded-lg bg-gray-50">
         <button
-          onClick={signOut}
+          onClick={onLogout}
           className="inline-flex cursor-pointer items-center px-3 py-2 text-sm font-medium rounded-md text-red-600 hover:bg-red-50"
         >
           <LogOut className="w-4 h-4 mr-2" />

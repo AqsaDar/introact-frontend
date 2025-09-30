@@ -57,7 +57,7 @@ function Pipeline() {
   const stages = [
     {
       id: "validation",
-      title: "Data Validation",
+      title: "Source Target",
       description: "AI validates company data",
       color: "bg-blue-500",
       icon: FileText,
@@ -66,7 +66,7 @@ function Pipeline() {
     },
     {
       id: "email_outreach",
-      title: "Email Outreach",
+      title: "Auto Outreach",
       description: "Automated email campaigns",
       color: "bg-green-500",
       icon: Send,
@@ -75,7 +75,7 @@ function Pipeline() {
     },
     {
       id: "call_initiated",
-      title: "AI Call Initiated",
+      title: "Validation Call",
       description: "Scheduled AI conversations",
       color: "bg-purple-500",
       icon: Phone,
@@ -84,7 +84,7 @@ function Pipeline() {
     },
     {
       id: "ai_analysis",
-      title: "AI Analysis",
+      title: "SPAC Scorecard",
       description: "Processing call transcripts",
       color: "bg-indigo-500",
       icon: Brain,
@@ -93,7 +93,7 @@ function Pipeline() {
     },
     {
       id: "human_review",
-      title: "Human Review",
+      title: "Create CIM",
       description: "Expert evaluation required",
       color: "bg-pink-500",
       icon: Users,
@@ -102,7 +102,7 @@ function Pipeline() {
     },
     {
       id: "final_decision",
-      title: "Final Decision",
+      title: "Human Engage",
       description: "Approved or rejected",
       color: "bg-orange-500",
       icon: TrendingUp,
@@ -352,17 +352,17 @@ function Pipeline() {
             </p>
           </div>
 
-          <button
+          {/* <button
             onClick={() => setShowCallConfig(true)}
             className="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors shadow-md hover:shadow-lg"
           >
             <Settings className="w-4 h-4 mr-2" />
             Configure Call Questions
-          </button>
+          </button> */}
         </div>
 
         {/* Top Stats Cards */}
-        <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -408,7 +408,7 @@ function Pipeline() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Pipeline Stages */}
         <div className="relative">

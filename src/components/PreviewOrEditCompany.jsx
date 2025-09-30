@@ -5,13 +5,13 @@ import { AddNotesAndFileModel } from "./AddNotesAndFileModel";
 import { Plus } from "lucide-react";
 
 const columns = [
-  { key: "company_name", label: "CompanyName", type: "text" },
+  { key: "company_name", label: "Company Name", type: "text" },
   { key: "website", label: "Website", type: "url" },
   { key: "industry", label: "Industry", type: "text" },
-  { key: "revenue", label: "Revenue(USD M)", type: "number" },
+  { key: "revenue", label: "Revenue($)", type: "number" },
   { key: "employees", label: "Employees", type: "number" },
-  { key: "hq_location", label: "HQ-Location", type: "text" },
-  { key: "contact_person", label: "ContactPerson", type: "text" },
+  { key: "hq_location", label: "HQ Location", type: "text" },
+  { key: "contact_person", label: "Contact Person", type: "text" },
   { key: "email", label: "Email", type: "email" },
   { key: "phone", label: "Phone", type: "tel" },
   { key: "notes_count", label: "Notes", type: "text" },
@@ -46,7 +46,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     setCurrentPage(0);
   }, [content]);
 
-  const rowsPerPage = 500;
+  const rowsPerPage = 1000;
   const [currentPage, setCurrentPage] = useState(0);
 
   // Filter data based on search term
@@ -458,8 +458,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                     {columns.map((c) => (
                       <th
                         key={c.key}
-                        style={{whiteSpace: "nowrap"}}
-                        className="px-4 py-3 text-left text-xs font-semibold text-gray-600 tracking-wider align-top break-words"
+                        // style={{whiteSpace: "nowrap"}}
+                        className="px-4 py-3 text-left text-[11px] font-semibold text-gray-600 tracking-wider align-top"
                       >
                         {c.label}
                         {getFieldIssues(c.key) && (

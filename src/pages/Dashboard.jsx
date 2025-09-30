@@ -108,7 +108,7 @@ function Dashboard() {
             Dashboard
           </h1>
           <p className="mt-2 text-gray-600">
-            Welcome to the dashboard
+            These are the hard-coded stats for the dashboard.
           </p>
         </div>
       </div>
