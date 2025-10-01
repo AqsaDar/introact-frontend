@@ -16,6 +16,7 @@ import Upload from "./pages/Upload";
 import Kanban from "./pages/Kanban";
 import EmailTemplates from "./pages/EmailTemplates";
 import InviteAnalyst from "./pages/InviteAnalyst";
+import VapiIntegration from "./pages/VapiIntegration";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 // Protected Route component
@@ -130,8 +131,18 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <Layout>
-                  <Reports />
+                  <Reports />5
                 </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ai-call"
+            element={
+              <ProtectedRoute>
+                {/* <Layout> */}
+                  <VapiIntegration />
+                {/* </Layout> */}
               </ProtectedRoute>
             }
           />

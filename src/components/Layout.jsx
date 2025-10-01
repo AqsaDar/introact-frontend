@@ -14,6 +14,7 @@ import {
   Kanban,
   ChevronDown,
   Mail,
+  Phone,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import Header from "./Header";
@@ -50,6 +51,12 @@ const navigation = [
     icon: Mail,
     description: "Choose & preview templates",
   },
+  // {
+  //   name: "VAPI Integration",
+  //   href: "/vapi-integration",
+  //   icon: Phone,
+  //   description: "Voice AI calls & automation",
+  // },
 ];
 
 function Layout({ children }) {
