@@ -7,6 +7,8 @@ export const AddNotesAndFileModel = ({
   isUploadOpen,
   closeUploadModal,
   row,
+  note_clicked,
+  attachment_clicked
 }) => {
   const [tempNotes, setTempNotes] = useState([]);
   const [tempAttachmentFiles, setTempAttachmentFiles] = useState([]);
@@ -250,6 +252,7 @@ export const AddNotesAndFileModel = ({
           </h3>
           <div className="space-y-8">
             {/* Notes Section */}
+            {note_clicked && (
             <div>
               <div className="flex items-center justify-between mb-4">
                 <label className="block text-lg font-semibold text-gray-700">
@@ -286,8 +289,10 @@ export const AddNotesAndFileModel = ({
                 )}
               </div>
             </div>
+            )}
 
             {/* Attachments Section */}
+            {attachment_clicked && (
             <div>
               <div className="flex items-center justify-between mb-4">
                 <label className="block text-lg font-semibold text-gray-700">
@@ -325,6 +330,7 @@ export const AddNotesAndFileModel = ({
                 )}
               </div>
             </div>
+            )}
           </div>
           <div className="mt-8 flex justify-end gap-3">
             <button

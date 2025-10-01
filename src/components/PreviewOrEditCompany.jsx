@@ -40,6 +40,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   const [editingRows, setEditingRows] = useState(new Set());
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [attachmentUploadRow, setAttachmentUploadRow] = useState(null);
+  const [noteClicked, setNoteClicked] = useState(false);
+  const [attachmentClicked, setAttachmentClicked] = useState(false);
   useEffect(() => {
     const newData = getInitialData();
     setData(newData);
@@ -155,10 +157,12 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   };
 
   // Upload modal helpers - for both notes and attachments
-  const openUploadModal = (indexOnPage) => {
+  const openUploadModal = (indexOnPage,note_click,attachment_click) => {
     const globalIndex = currentPage * rowsPerPage + indexOnPage;
     const row = filteredData[globalIndex];
     setAttachmentUploadRow(row);
+    setNoteClicked(note_click);
+    setAttachmentClicked(attachment_click);
     setIsUploadOpen(true);
   };
 
@@ -184,31 +188,48 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
         return copy;
       });
     }
+
     setIsUploadOpen(false);
+    setNoteClicked(false);
+    setAttachmentClicked(false);
   };
 
-  const renderNotesDisplay = (notesCount) => {
-    if (!notesCount || notesCount === 0)
-      return <span className="text-gray-400">—</span>;
-
+  const renderNotesDisplay = (notesCount, onAdd) => {
+    if (notesCount == null) notesCount = 0;
     return (
-      <div className="flex items-center justify-center">
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-          {notesCount} note{notesCount !== 1 ? "s" : ""}
+      <div className="flex items-center justify-center gap-3">
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-800 border border-gray-300 shadow-sm">
+          {notesCount} 
+          {/* note{notesCount !== 1 ? 's' : ''} */}
         </span>
+        <button
+          type="button"
+          onClick={onAdd}
+          title="Add note"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
+        </button>
       </div>
     );
   };
 
-  const renderFileDisplay = (attachmentCount) => {
-    if (!attachmentCount || attachmentCount === 0)
-      return <span className="text-gray-400">—</span>;
-
+  const renderFileDisplay = (attachmentCount, onAdd) => {
+    if (attachmentCount == null) attachmentCount = 0;
     return (
-      <div className="flex items-center justify-center">
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-          {attachmentCount} attachment{attachmentCount !== 1 ? "s" : ""}
+      <div className="flex items-center justify-center gap-3">
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-800 border border-gray-300 shadow-sm">
+          {attachmentCount} 
+          {/* attachment{attachmentCount !== 1 ? 's' : ''} */}
         </span>
+        <button
+          type="button"
+          onClick={onAdd}
+          title="Add attachment"
+          className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
+        </button>
       </div>
     );
   };
@@ -461,13 +482,13 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
           >
             <div className="overflow-y-auto overflow-x-hidden flex-1">
               <table className="w-full table-fixed divide-y divide-gray-200">
-                <thead className="bg-gray-50 sticky top-0 z-10">
+                <thead className="bg-gray-50 sticky top-0 z-10 text-center">
                   <tr>
                     {columns.map((c) => (
                       <th
                         key={c.key}
                         // style={{whiteSpace: "nowrap"}}
-                        className="px-4 py-3 text-left text-[11px] font-semibold text-gray-600 tracking-wider align-top"
+                        className="px-4 py-4 text-sm font-bold text-gray-800 tracking-wider align-top text-center"
                       >
                         {c.label}
                         {getFieldIssues(c.key) && (
@@ -489,7 +510,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                   {currentRows.map((row, idx) => (
                     <tr
                       key={offset + idx}
-                      className="hover:bg-gray-50 transition-colors duration-150 align-top"
+                      className="hover:bg-gray-50 transition-colors duration-150 align-top odd:bg-white even:bg-gray-50"
                     >
                       {columns.map((c) => {
                         const isEmpty = isFieldEmpty(row, c.key);
@@ -502,12 +523,12 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         return (
                           <td
                             key={c.key}
-                            className="px-4 py-3 text-sm align-top break-words"
+                            className="px-4 py-3 text-sm align-top break-words text-center"
                           >
                             {isAttachment ? (
-                              renderFileDisplay(row[c.key])
+                              renderFileDisplay(row[c.key],() => openUploadModal(idx,false,true))
                             ) : isNotes ? (
-                              renderNotesDisplay(row[c.key])
+                              renderNotesDisplay(row[c.key],() => openUploadModal(idx,true,false))
                             ) : isWebsite ? (
                               editing ? (
                                 <div className="relative">
@@ -547,9 +568,11 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                   )}
                                 </div>
                               ) : (
-                                <div className="text-sm break-words">
+                                <div className="cursor-pointer text-sm break-words flex items-center justify-center gap-2">
                                   {row[c.key] ? (
-                                    <a
+                                    <>
+                                      <span title={normalizeUrl(row[c.key])}>🌐</span>
+                                      {/* <a
                                       href={normalizeUrl(row[c.key])}
                                       target="_blank"
                                       rel="noopener noreferrer"
@@ -557,7 +580,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                       title={normalizeUrl(row[c.key])}
                                     >
                                       {row[c.key]}
-                                    </a>
+                                    </a> */}
+                                    </>
                                   ) : (
                                     <span className="text-gray-400">—</span>
                                   )}
@@ -578,12 +602,18 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                 placeholder={isEmpty ? "Required field" : ""}
                               />
                             ) : (
+                              c.key === "email" ? (
+                                <div className="cursor-pointer text-sm break-words flex items-center justify-center gap-2">
+                                  <span title={row[c.key] ?? ""}>✉️</span>
+                                  {/* <span className="text-gray-900 truncate max-w-[220px]" title={row[c.key] ?? ""}>{row[c.key] ?? <span className="text-gray-400">—</span>}</span> */}
+                                </div>
+                              ) : (
                               <span className="text-sm text-gray-900 break-words">
-                                {row[c.key] ?? (
+                                 {(["company_name","contact_person","phone"].includes(c.key) && !isRowEditing(idx)) ? <span className="font-semibold text-gray-900">{row[c.key]}</span> : (row[c.key] ?? (
                                   <span className="text-gray-400">—</span>
-                                )}
+                                ))}
                               </span>
-                            )}
+                            ))}
                             {editing &&
                               isEmpty &&
                               !isAttachment &&
@@ -637,16 +667,9 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                                   />
                                 </svg>
-                                Edit
+                                {/* Edit */}
                               </>
                             )}
-                          </button>
-                          <button
-                            onClick={() => openUploadModal(idx, "row")}
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-gray-600 text-white hover:bg-gray-700 transition-all duration-200"
-                          >
-                            <Plus className="w-4 h-4" />
-                            Add Entry
                           </button>
                         </div>
                       </td>
@@ -748,19 +771,19 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         <span className="text-sm font-medium text-gray-500 mb-1">
                           Notes
                         </span>
-                        {renderNotesDisplay(row.notes_count)}
+                        {renderNotesDisplay(row.notes_count, () => openUploadModal(idx,true,false))}
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm font-medium text-gray-500 mb-1">
                           Attachment
                         </span>
-                        {renderFileDisplay(row.attachments_count)}
+                        {renderFileDisplay(row.attachments_count, () => openUploadModal(idx,false,true))}
                       </div>
                     </div>
 
                     <div className="flex flex-wrap flex-col gap-2 pt-4 border-t border-gray-100">
                       <button
-                        onClick={() => openUploadModal(idx, "row")}
+                        onClick={() => openUploadModal(idx, "row",true,true)}
                         className="flex-1 px-3 py-2 text-xs font-medium bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                       >
                         Add Entry
@@ -838,6 +861,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
         closeUploadModal={closeUploadModal}
         isUploadOpen={isUploadOpen}
         row={attachmentUploadRow}
+        note_clicked={noteClicked}
+        attachment_clicked={attachmentClicked}
       />
     </div>
   );
