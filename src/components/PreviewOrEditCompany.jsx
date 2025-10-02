@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { getRequest, postRequest, putRequest } from "../utils/httpClient";
 import Loader from "./Loader";
 import { AddNotesAndFileModel } from "./AddNotesAndFileModel";
-import { Plus } from "lucide-react";
+import { Plus, MoreVertical, Copy, Edit, FileText, Paperclip } from "lucide-react";
 import { toast } from "react-toastify";
 
 const columns = [
@@ -42,6 +42,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   const [attachmentUploadRow, setAttachmentUploadRow] = useState(null);
   const [noteClicked, setNoteClicked] = useState(false);
   const [attachmentClicked, setAttachmentClicked] = useState(false);
+  const [copiedItems, setCopiedItems] = useState({});
+  const [showDropdown, setShowDropdown] = useState(null);
   useEffect(() => {
     const newData = getInitialData();
     setData(newData);
@@ -117,6 +119,24 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
 
   const clearSearch = () => {
     setSearchTerm("");
+  };
+
+  const copyToClipboard = async (text, type, rowId) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      const itemKey = `${rowId}-${type}`;
+      setCopiedItems(prev => ({ ...prev, [itemKey]: true }));
+      toast.success(`${type} copied to clipboard`);
+      setTimeout(() => {
+        setCopiedItems(prev => {
+          const newState = { ...prev };
+          delete newState[itemKey];
+          return newState;
+        });
+      }, 2000);
+    } catch (err) {
+      toast.error('Failed to copy to clipboard');
+    }
   };
 
   const isUrl = (value) =>
@@ -202,14 +222,14 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
           {notesCount} 
           {/* note{notesCount !== 1 ? 's' : ''} */}
         </span>
-        <button
+        {/* <button
           type="button"
           onClick={onAdd}
           title="Add note"
           className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
-        </button>
+        </button> */}
       </div>
     );
   };
@@ -222,17 +242,28 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
           {attachmentCount} 
           {/* attachment{attachmentCount !== 1 ? 's' : ''} */}
         </span>
-        <button
+        {/* <button
           type="button"
           onClick={onAdd}
           title="Add attachment"
           className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-700 text-white hover:bg-gray-800 shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
-        </button>
+        </button> */}
       </div>
     );
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showDropdown !== null && !event.target.closest('.relative')) {
+        setShowDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showDropdown]);
 
   return (
     <div className="h-screen mx-2 flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -570,18 +601,16 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                               ) : (
                                 <div className="cursor-pointer text-sm break-words flex items-center justify-center gap-2">
                                   {row[c.key] ? (
-                                    <>
-                                      <span title={normalizeUrl(row[c.key])}>🌐</span>
-                                      {/* <a
-                                      href={normalizeUrl(row[c.key])}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-gray-600 hover:text-gray-800 hover:underline font-medium break-words"
-                                      title={normalizeUrl(row[c.key])}
+                                    <button
+                                      onClick={() => copyToClipboard(normalizeUrl(row[c.key]), 'Website', row.id || offset + idx)}
+                                      className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
+                                      title={copiedItems[`${row.id || offset + idx}-Website`] ? 'Copied!' : `Copy ${normalizeUrl(row[c.key])}`}
                                     >
-                                      {row[c.key]}
-                                    </a> */}
-                                    </>
+                                      <span className="text-lg">🌐</span>
+                                      {copiedItems[`${row.id || offset + idx}-Website`] && (
+                                        <span className="text-xs text-green-600 font-medium">Copied!</span>
+                                      )}
+                                    </button>
                                   ) : (
                                     <span className="text-gray-400">—</span>
                                   )}
@@ -604,8 +633,20 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                             ) : (
                               c.key === "email" ? (
                                 <div className="cursor-pointer text-sm break-words flex items-center justify-center gap-2">
-                                  <span title={row[c.key] ?? ""}>✉️</span>
-                                  {/* <span className="text-gray-900 truncate max-w-[220px]" title={row[c.key] ?? ""}>{row[c.key] ?? <span className="text-gray-400">—</span>}</span> */}
+                                  {row[c.key] ? (
+                                    <button
+                                      onClick={() => copyToClipboard(row[c.key], 'Email', row.id || offset + idx)}
+                                      className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
+                                      title={copiedItems[`${row.id || offset + idx}-Email`] ? 'Copied!' : `Copy ${row[c.key]}`}
+                                    >
+                                      <span className="text-lg">✉️</span>
+                                      {copiedItems[`${row.id || offset + idx}-Email`] && (
+                                        <span className="text-xs text-green-600 font-medium">Copied!</span>
+                                      )}
+                                    </button>
+                                  ) : (
+                                    <span className="text-gray-400">—</span>
+                                  )}
                                 </div>
                               ) : (
                               <span className="text-sm text-gray-900 break-words">
@@ -626,51 +667,49 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         );
                       })}
                       <td className="px-4 py-3 text-center align-top">
-                        <div className="flex flex-wrap items-center justify-center gap-2">
+                        <div className="relative">
                           <button
-                            onClick={() => toggleRowEditing(idx,row)}
-                            className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-                              isRowEditing(idx)
-                                ? "bg-gray-600 text-white shadow-sm"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                            }`}
+                            onClick={() => setShowDropdown(showDropdown === idx ? null : idx)}
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                            title="More actions"
                           >
-                            {isRowEditing(idx) ? (
-                              <>
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                                Done
-                              </>
-                            ) : (
-                              <>
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                  />
-                                </svg>
-                                {/* Edit */}
-                              </>
-                            )}
+                            <MoreVertical className="w-4 h-4" />
                           </button>
+                          
+                          {showDropdown === idx && (
+                            <div className="absolute right-0 top-10 z-20 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                              <button
+                                onClick={() => {
+                                  toggleRowEditing(idx, row);
+                                  setShowDropdown(null);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <Edit className="w-4 h-4" />
+                                {isRowEditing(idx) ? 'Done' : 'Edit'}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  openUploadModal(idx, true, false);
+                                  setShowDropdown(null);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <FileText className="w-4 h-4" />
+                                Add Note
+                              </button>
+                              <button
+                                onClick={() => {
+                                  openUploadModal(idx, false, true);
+                                  setShowDropdown(null);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <Paperclip className="w-4 h-4" />
+                                Add Attachment
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -695,99 +734,271 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                     key={offset + idx}
                     className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200"
                   >
+                    {/* Header with Company Name and Three Dots Menu */}
                     <div className="flex items-start justify-between mb-4">
                       <h4
                         className="font-bold text-gray-900 text-lg truncate pr-2"
                         title={row.company_name}
                       >
-                        {row.company_name}
+                        {editing ? (
+                          <input
+                            type="text"
+                            value={row.company_name ?? ""}
+                            onChange={(e) => handleChange(idx, "company_name", e.target.value)}
+                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                            placeholder="Company Name"
+                          />
+                        ) : (
+                          row.company_name
+                        )}
                       </h4>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        {row.website && (
-                          <a
-                            href={normalizeUrl(row.website)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={normalizeUrl(row.website)}
-                            className="text-gray-600 hover:text-gray-700 text-sm font-medium"
+                        {/* Three Dots Menu */}
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowDropdown(showDropdown === idx ? null : idx)}
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                            title="More actions"
                           >
-                            Visit ↗
-                          </a>
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                          
+                          {showDropdown === idx && (
+                            <div className="absolute right-0 top-10 z-20 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                              <button
+                                onClick={() => {
+                                  toggleRowEditing(idx, row);
+                                  setShowDropdown(null);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <Edit className="w-4 h-4" />
+                                {editing ? 'Done' : 'Edit'}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  openUploadModal(idx, true, false);
+                                  setShowDropdown(null);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <FileText className="w-4 h-4" />
+                                Add Note
+                              </button>
+                              <button
+                                onClick={() => {
+                                  openUploadModal(idx, false, true);
+                                  setShowDropdown(null);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <Paperclip className="w-4 h-4" />
+                                Add Attachment
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* All Fields Display */}
+                    <div className="space-y-3 mb-4">
+                      {/* Website */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-500">Website</span>
+                        {editing ? (
+                          <div className="relative">
+                            <input
+                              type="url"
+                              value={row.website ?? ""}
+                              onChange={(e) => handleChange(idx, "website", e.target.value)}
+                              className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                              placeholder="Website URL"
+                            />
+                            {row.website && (
+                              <a
+                                href={normalizeUrl(row.website)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={normalizeUrl(row.website)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                              >
+                                <svg className="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M13.172 7l-1.414 1.414 2.121 2.121-4.95 4.95a3 3 0 01-4.243-4.243l3.536-3.536-1.414-1.414-3.536 3.536a5 5 0 107.071 7.071l4.95-4.95 2.121 2.121L17 13.172V7h-6.172z" />
+                                </svg>
+                              </a>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            {row.website ? (
+                              <button
+                                onClick={() => copyToClipboard(normalizeUrl(row.website), 'Website', row.id || offset + idx)}
+                                className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
+                                title={copiedItems[`${row.id || offset + idx}-Website`] ? 'Copied!' : `Copy ${normalizeUrl(row.website)}`}
+                              >
+                                <span className="text-lg">🌐</span>
+                                {copiedItems[`${row.id || offset + idx}-Website`] && (
+                                  <span className="text-xs text-green-600 font-medium">Copied!</span>
+                                )}
+                              </button>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Email */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-500">Email</span>
+                        {editing ? (
+                          <input
+                            type="email"
+                            value={row.email ?? ""}
+                            onChange={(e) => handleChange(idx, "email", e.target.value)}
+                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                            placeholder="Email address"
+                          />
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            {row.email ? (
+                              <button
+                                onClick={() => copyToClipboard(row.email, 'Email', row.id || offset + idx)}
+                                className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
+                                title={copiedItems[`${row.id || offset + idx}-Email`] ? 'Copied!' : `Copy ${row.email}`}
+                              >
+                                <span className="text-lg">✉️</span>
+                                {copiedItems[`${row.id || offset + idx}-Email`] && (
+                                  <span className="text-xs text-green-600 font-medium">Copied!</span>
+                                )}
+                              </button>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Phone */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-500">Phone</span>
+                        {editing ? (
+                          <input
+                            type="tel"
+                            value={row.phone ?? ""}
+                            onChange={(e) => handleChange(idx, "phone", e.target.value)}
+                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                            placeholder="Phone number"
+                          />
+                        ) : (
+                          <span className="text-sm text-gray-900 font-semibold">
+                            {row.phone || <span className="text-gray-400">—</span>}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Industry */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-500">Industry</span>
+                        {editing ? (
+                          <input
+                            type="text"
+                            value={row.industry ?? ""}
+                            onChange={(e) => handleChange(idx, "industry", e.target.value)}
+                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                            placeholder="Industry"
+                          />
+                        ) : (
+                          <span className="text-sm text-gray-600">
+                            {row.industry || <span className="text-gray-400">—</span>}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Revenue */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-500">Revenue</span>
+                        {editing ? (
+                          <input
+                            type="number"
+                            value={row.revenue ?? ""}
+                            onChange={(e) => handleChange(idx, "revenue", e.target.value)}
+                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                            placeholder="Revenue"
+                          />
+                        ) : (
+                          <span className="text-sm text-gray-600">
+                            {row.revenue ? `$${row.revenue}M` : <span className="text-gray-400">—</span>}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Employees */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-500">Employees</span>
+                        {editing ? (
+                          <input
+                            type="number"
+                            value={row.employees ?? ""}
+                            onChange={(e) => handleChange(idx, "employees", e.target.value)}
+                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                            placeholder="Employees"
+                          />
+                        ) : (
+                          <span className="text-sm text-gray-600">
+                            {row.employees || <span className="text-gray-400">—</span>}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* HQ Location */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-500">HQ Location</span>
+                        {editing ? (
+                          <input
+                            type="text"
+                            value={row.hq_location ?? ""}
+                            onChange={(e) => handleChange(idx, "hq_location", e.target.value)}
+                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                            placeholder="HQ Location"
+                          />
+                        ) : (
+                          <span className="text-sm text-gray-600 truncate ml-2" title={row.hq_location}>
+                            {row.hq_location || <span className="text-gray-400">—</span>}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Contact Person */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-500">Contact Person</span>
+                        {editing ? (
+                          <input
+                            type="text"
+                            value={row.contact_person ?? ""}
+                            onChange={(e) => handleChange(idx, "contact_person", e.target.value)}
+                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                            placeholder="Contact Person"
+                          />
+                        ) : (
+                          <span className="text-sm text-gray-900 font-semibold truncate ml-2" title={row.contact_person}>
+                            {row.contact_person || <span className="text-gray-400">—</span>}
+                          </span>
                         )}
                       </div>
                     </div>
 
-                    <div className="space-y-3 mb-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
-                          Industry
-                        </span>
-                        <span className="text-sm text-gray-900 font-semibold">
-                          {row.industry}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
-                          Revenue
-                        </span>
-                        <span className="text-sm text-gray-900 font-semibold">
-                          ${row.revenue}M
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
-                          Employees
-                        </span>
-                        <span className="text-sm text-gray-900 font-semibold">
-                          {row.employees}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
-                          HQ
-                        </span>
-                        <span
-                          className="text-sm text-gray-900 font-semibold truncate ml-2"
-                          title={row.hq_location}
-                        >
-                          {row.hq_location}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
-                          Contact
-                        </span>
-                        <span
-                          className="text-sm text-gray-900 font-semibold truncate ml-2"
-                          title={row.contact_person}
-                        >
-                          {row.contact_person}
-                        </span>
-                      </div>
-                    </div>
-
+                    {/* Notes and Attachments */}
                     <div className="space-y-3 mb-6">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500 mb-1">
-                          Notes
-                        </span>
+                        <span className="text-sm font-medium text-gray-500 mb-1">Notes</span>
                         {renderNotesDisplay(row.notes_count, () => openUploadModal(idx,true,false))}
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500 mb-1">
-                          Attachment
-                        </span>
+                        <span className="text-sm font-medium text-gray-500 mb-1">Attachment</span>
                         {renderFileDisplay(row.attachments_count, () => openUploadModal(idx,false,true))}
                       </div>
-                    </div>
-
-                    <div className="flex flex-wrap flex-col gap-2 pt-4 border-t border-gray-100">
-                      <button
-                        onClick={() => openUploadModal(idx, "row",true,true)}
-                        className="flex-1 px-3 py-2 text-xs font-medium bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                      >
-                        Add Entry
-                      </button>
                     </div>
                   </div>
                 );

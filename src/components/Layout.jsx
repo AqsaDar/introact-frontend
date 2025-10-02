@@ -61,6 +61,7 @@ const navigation = [
 
 function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -88,7 +89,11 @@ function Layout({ children }) {
   };
 
   const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
+    if (isMobile) {
+      setSidebarOpen(!sidebarOpen);
+    } else {
+      setSidebarCollapsed(!sidebarCollapsed);
+    }
   };
 
   return (
@@ -109,15 +114,15 @@ function Layout({ children }) {
                 <X className="w-6 h-6 text-white" />
               </button>
             </div>
-            <SidebarContent onLogout={handleLogout} />
+            <SidebarContent onLogout={handleLogout} collapsed={false} />
           </div>
         </div>
       )}
 
-      {/* Desktop sidebar - Always visible on desktop, toggleable */}
-      <div className={`hidden lg:flex lg:flex-shrink-0 transition-all duration-300 ${sidebarOpen ? 'lg:block' : 'lg:hidden'}`}>
-        <div className="flex flex-col w-72">
-          <SidebarContent onLogout={handleLogout} />
+      {/* Desktop sidebar - Always visible on desktop, toggleable between expanded/collapsed */}
+      <div className="hidden lg:flex lg:flex-shrink-0 transition-all duration-300">
+        <div className={`flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-72'}`}>
+          <SidebarContent onLogout={handleLogout} collapsed={sidebarCollapsed} />
         </div>
       </div>
 
@@ -138,39 +143,42 @@ function Layout({ children }) {
   );
 }
 
-function SidebarContent({ onLogout }) {
+function SidebarContent({ onLogout, collapsed = false }) {
   const location = useLocation();
 
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-white border-r border-gray-200">
       {/* Logo Section */}
-      <div className="flex items-center flex-shrink-0 px-6 py-8 border-b border-gray-200">
+      <div className={`flex items-center flex-shrink-0 border-b border-gray-200 ${collapsed ? 'px-3 py-6' : 'px-6 py-8'}`}>
         <Link to="/dashboard" className="flex items-center w-full group">
           <div className="flex items-center justify-center w-12 h-12 bg-gray-600 rounded-lg group-hover:bg-gray-700 transition-colors">
             <Zap className="w-7 h-7 text-white" />
           </div>
-          <div className="ml-4">
-            <h2 className="text-xl font-bold text-gray-900 group-hover:text-gray-950">Lead Enrichment System</h2>
-            <p className="text-sm text-gray-500 font-medium">
-              Automation Platform
-            </p>
-          </div>
+          {!collapsed && (
+            <div className="ml-4">
+              <h2 className="text-xl font-bold text-gray-900 group-hover:text-gray-950">Lead Enrichment System</h2>
+              <p className="text-sm text-gray-500 font-medium">
+                Automation Platform
+              </p>
+            </div>
+          )}
         </Link>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-2">
+      <nav className={`flex-1 py-6 space-y-2 ${collapsed ? 'px-2' : 'px-4'}`}>
         {navigation.map((item) => {
           const isActive = location.pathname === item.href;
           return (
             <Link
               key={item.name}
               to={item.href}
-              className={`group flex items-center justify-between px-4 py-4 text-sm font-medium rounded-lg transition-all duration-200 ${
-                isActive
-                  ? "bg-green-100 text-gray-900"
-                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+              className={`group flex items-center transition-all duration-200 ${
+                collapsed 
+                  ? `justify-center px-3 py-4 rounded-lg ${isActive ? "bg-green-100 text-gray-900" : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"}`
+                  : `justify-between px-4 py-4 text-sm font-medium rounded-lg ${isActive ? "bg-green-100 text-gray-900" : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"}`
               }`}
+              title={collapsed ? item.name : undefined}
             >
               <div className="flex items-center">
                 <div
@@ -188,9 +196,11 @@ function SidebarContent({ onLogout }) {
                     }`}
                   />
                 </div>
-                <div className="ml-4">
-                  <span className="block font-semibold">{item.name}</span>
-                </div>
+                {!collapsed && (
+                  <div className="ml-4">
+                    <span className="block font-semibold">{item.name}</span>
+                  </div>
+                )}
               </div>
             </Link>
           );
@@ -198,13 +208,16 @@ function SidebarContent({ onLogout }) {
       </nav>
 
       {/* Bottom actions */}
-      <div className="flex items-center justify-center p-4 rounded-lg bg-gray-50">
+      <div className={`flex items-center ${collapsed ? 'justify-center p-2' : 'justify-center p-4'} rounded-lg bg-gray-50`}>
         <button
           onClick={onLogout}
-          className="inline-flex cursor-pointer items-center px-3 py-2 text-sm font-medium rounded-md text-red-600 hover:bg-red-50"
+          className={`inline-flex cursor-pointer items-center text-sm font-medium rounded-lg border border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-all duration-200 ${
+            collapsed ? 'px-3 py-2' : 'px-4 py-2'
+          }`}
+          title={collapsed ? 'Sign Out' : undefined}
         >
-          <LogOut className="w-4 h-4 mr-2" />
-          Sign Out
+          <LogOut className="w-4 h-4" />
+          {!collapsed && <span className="ml-2">Sign Out</span>}
         </button>
       </div>
     </div>

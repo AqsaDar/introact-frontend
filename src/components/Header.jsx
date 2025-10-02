@@ -75,9 +75,6 @@ const Header = ({ onMenuToggle, showMenuButton = false }) => {
         {/* Right side - Notifications and User Menu */}
         <div className="flex items-center space-x-3">
           {/* Notifications */}
-          <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
-            <Bell className="w-5 h-5" />
-          </button>
 
           {/* User Avatar + Settings Dropdown */}
           {user && (

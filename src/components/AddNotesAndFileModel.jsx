@@ -341,7 +341,7 @@ export const AddNotesAndFileModel = ({
             </button>
             <button
               onClick={() => closeUploadModal(tempNotes, tempAttachmentFiles)}
-              className="px-6 py-3 rounded-lg bg-gray-600 text-white hover:bg-gray-700 font-medium transition-colors"
+              className="px-6 py-3 rounded-lg bg-blue-600 text-white font-medium transition-colors"
             >
               Done
             </button>
