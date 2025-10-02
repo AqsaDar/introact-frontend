@@ -532,7 +532,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         )}
                       </th>
                     ))}
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 tracking-wider align-top break-words">
+                    <th className="px-4 py-4 text-sm font-bold text-gray-800 tracking-wider align-top text-center">
                       Actions
                     </th>
                   </tr>
