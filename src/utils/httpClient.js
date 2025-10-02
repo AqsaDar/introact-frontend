@@ -66,14 +66,14 @@ http.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: handle token refresh on 401
+// Response interceptor: handle token refresh on 403
 http.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // If error is 401 and we haven't already tried to refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // If error is 403 and we haven't already tried to refresh
+    if (error.response?.status === 403 && !originalRequest._retry) {
       try {
         // Call refresh API
         const response = await axios.post(

@@ -59,7 +59,7 @@ function Login() {
       toast.error(err?.message || "Failed to login");
       console.error("Login error:", err);
 
-      if (err.status === 401) {
+      if (err.status === 403) {
         setError("Invalid email or password. Please check your credentials.");
       } else if (err.status === 400) {
         setError("Please check your email and password format.");
