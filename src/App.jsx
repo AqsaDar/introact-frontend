@@ -131,7 +131,7 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <Layout>
-                  <Reports />5
+                  <Reports />
                 </Layout>
               </ProtectedRoute>
             }

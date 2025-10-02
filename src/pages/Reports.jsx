@@ -84,10 +84,11 @@ function Reports() {
   const COLORS = ["#6b7280", "#9ca3af", "#4b5563", "#374151", "#1f2937"];
 
   const FunnelStep = ({ data, index, isLast }) => {
+    const sumTotal = reportsData.conversionFunnel.reduce((acc, curr) => acc + curr.count, 0)
     const percentage =
       index === 0
         ? 100
-        : ((data.count / reportsData.conversionFunnel[0].count) * 100).toFixed(
+        : ((data.count / sumTotal) * 100).toFixed(
             1
           );
     const width = Math.max(20, percentage);
