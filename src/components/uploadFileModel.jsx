@@ -301,14 +301,14 @@ export const UploadCompaniesFileModel = ({
         )}
 
         {/* Table */}
-        <div className="overflow-x-auto max-h-[40vh] overflow-y-auto border rounded-md">
-          <table className="min-w-full border-collapse text-sm">
-            <thead className="bg-gray-50 sticky top-0 text-[11px]">
+        <div className="overflow-x-auto max-h-[50vh] overflow-y-auto border border-gray-300 rounded-lg shadow-sm">
+          <table className="w-full border-collapse table-auto">
+            <thead className="bg-gray-100 sticky top-0">
               <tr>
                 {columns.map((c) => (
                   <th
                     key={c.key}
-                    className="border border-gray-200 p-2 text-left font-medium text-gray-600"
+                    className="border-b-2 border-gray-300 px-3 py-4 text-center text-sm font-bold text-gray-900 whitespace-nowrap"
                   >
                     {c.label}
                   </th>
@@ -317,103 +317,127 @@ export const UploadCompaniesFileModel = ({
             </thead>
 
             <tbody>
-              {currentRows.map((row, idx) => (
-                <tr key={offset + idx} className="hover:bg-gray-50">
-                  {columns.map((c) => {
-                    const isEmpty = isFieldEmpty(row, c.key);
-                    const hasFieldIssue = getFieldIssues(c.key);
-                    const isWebsite = c.key === "website";
-                    const readOnly = activeTab === "missing";
+              {currentRows.map((row, idx) => {
+                const isEven = (offset + idx) % 2 === 0;
+                return (
+                  <tr key={offset + idx} className={`${isEven ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition-colors`}>
+                    {columns.map((c) => {
+                      const isEmpty = isFieldEmpty(row, c.key);
+                      const hasFieldIssue = getFieldIssues(c.key);
+                      const isWebsite = c.key === "website";
+                      const isEmail = c.key === "email";
+                      const readOnly = activeTab === "missing";
+                      
+                      // Determine text color based on field importance
+                      const isImportantField = ['company_name', 'contact_person', 'phone'].includes(c.key);
+                      const textColorClass = isImportantField ? 'text-gray-900' : 'text-gray-600';
 
-                    return (
-                      <td
-                        key={c.key}
-                        className="border border-gray-200 p-2 align-top"
-                      >
-                        {isWebsite ? (
-                          <div className="relative">
-                            <input
-                              type={c.type}
-                              value={row[c.key] ?? ""}
-                              onChange={(e) =>
-                                handleChange(idx, c.key, e.target.value)
+                      return (
+                        <td
+                          key={c.key}
+                          className="border-b border-gray-200 px-3 py-3 align-top"
+                        >
+                          {isWebsite ? (
+                            <div >
+                              <div
+                                contentEditable={!readOnly}
+                                suppressContentEditableWarning={true}
+                                onBlur={(e) =>
+                                  handleChange(idx, c.key, e.target.textContent)
+                                }
+                                onInput={(e) => {
+                                  // Auto-resize based on content
+                                  e.target.style.height = 'auto';
+                                  e.target.style.height = e.target.scrollHeight + 'px';
+                                }}
+                                className={`w-full min-h-[32px] px-2 py-1 border rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300 ${
+                                  readOnly ? "cursor-not-allowed bg-gray-50" : "bg-white hover:bg-gray-50"
+                                } ${textColorClass} overflow-hidden resize-none`}
+                                style={{ 
+                                  minHeight: '32px',
+                                  maxHeight: '120px',
+                                  overflow: 'hidden'
+                                }}
+                                data-placeholder={
+                                  isEmpty
+                                    ? activeTab === "missing"
+                                      ? ""
+                                      : "Enter website URL"
+                                    : ""
+                                }
+                              >
+                                {row[c.key] || ""}
+                              </div>
+                              {row[c.key] && !readOnly && (
+                                <a
+                                  href={normalizeUrl(row[c.key])}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title={normalizeUrl(row[c.key])}
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    className="w-3 h-3"
+                                  >
+                                    <path d="M13.172 7l-1.414 1.414 2.121 2.121-4.95 4.95a3 3 0 01-4.243-4.243l3.536-3.536-1.414-1.414-3.536 3.536a5 5 0 107.071 7.071l4.95-4.95 2.121 2.121L17 13.172V7h-6.172z" />
+                                  </svg>
+                                </a>
+                              )}
+                            </div>
+                          ) : (
+                            <div
+                              contentEditable={!readOnly}
+                              suppressContentEditableWarning={true}
+                              onBlur={(e) =>
+                                handleChange(idx, c.key, e.target.textContent)
                               }
-                              title={row[c.key] ?? ""}
-                              readOnly={readOnly}
-                              className={`w-full border pr-9 px-2 py-1 rounded text-sm focus:ring focus:ring-gray-200 border-gray-300 ${
-                                readOnly ? "cursor-not-allowed" : ""
-                              }`}
-                              placeholder={
+                              onInput={(e) => {
+                                // Auto-resize based on content
+                                e.target.style.height = 'auto';
+                                e.target.style.height = e.target.scrollHeight + 'px';
+                              }}
+                              className={`w-full min-h-[32px] px-2 py-1 border rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300 ${
+                                readOnly ? "cursor-not-allowed bg-gray-50" : "bg-white hover:bg-gray-50"
+                              } ${textColorClass} overflow-hidden resize-none`}
+                              style={{ 
+                                minHeight: '32px',
+                                maxHeight: '120px',
+                                overflow: 'hidden'
+                              }}
+                              data-placeholder={
                                 isEmpty
                                   ? activeTab === "missing"
                                     ? ""
-                                    : "Required field"
+                                    : `Enter ${c.label.toLowerCase()}`
                                   : ""
                               }
-                            />
-                            {row[c.key] && !readOnly && (
-                              <a
-                                href={normalizeUrl(row[c.key])}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title={normalizeUrl(row[c.key])}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  viewBox="0 0 24 24"
-                                  fill="currentColor"
-                                  className="w-4 h-4"
-                                >
-                                  <path d="M13.172 7l-1.414 1.414 2.121 2.121-4.95 4.95a3 3 0 01-4.243-4.243l3.536-3.536-1.414-1.414-3.536 3.536a5 5 0 107.071 7.071l4.95-4.95 2.121 2.121L17 13.172V7h-6.172z" />
-                                </svg>
-                              </a>
-                            )}
-                          </div>
-                        ) : (
-                          <input
-                            type={c.type}
-                            value={row[c.key] ?? ""}
-                            onChange={(e) =>
-                              handleChange(idx, c.key, e.target.value)
-                            }
-                            readOnly={readOnly}
-                            className={`w-full border px-2 py-1 rounded text-sm focus:ring focus:ring-gray-200 border-gray-300 bg-white ${
-                              readOnly ? "cursor-not-allowed" : ""
-                            }`}
-                            placeholder={
-                              isEmpty
-                                ? activeTab === "missing"
-                                  ? ""
-                                  : "Required field"
-                                : ""
-                            }
-                          />
-                        )}
-                        {false && (
-                          <div className="text-xs text-red-500 mt-1">
-                            Empty field
-                          </div>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
+                            >
+                              {row[c.key] || ""}
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
 
-        {/* Simple Pagination: one page at a time */}
-        <div className="mt-4 flex justify-center items-center gap-3">
+        {/* Pagination */}
+        <div className="mt-6 flex justify-center items-center gap-3">
           <button
             onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
             disabled={currentPage === 0}
-            className="px-3 py-1 border rounded disabled:opacity-50"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            ← Prev
+            ← Previous
           </button>
-          <span className="px-3 py-1 border rounded bg-gray-600 text-white">
+          <span className="px-4 py-2 text-gray-700 rounded-lg text-sm font-medium">
             {currentPage + 1} / {pageCount}
           </span>
           <button
@@ -421,53 +445,55 @@ export const UploadCompaniesFileModel = ({
               setCurrentPage((p) => Math.min(pageCount - 1, p + 1))
             }
             disabled={currentPage === pageCount - 1}
-            className="px-3 py-1 border rounded disabled:opacity-50"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Next →
           </button>
         </div>
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3 mt-4">
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-          >
-            {isSaving ? (
-              <>
-                <svg
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Saving...
-              </>
-            ) : (
-              "Save"
-            )}
-          </button>
-          <button
-            onClick={handleCancel}
-            disabled={isSaving}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Cancel
-          </button>
+        {/* Fixed Footer Actions */}
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 -mx-6 -mb-6 mt-6">
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={handleCancel}
+              disabled={isSaving}
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center font-medium transition-colors"
+            >
+              {isSaving ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>
