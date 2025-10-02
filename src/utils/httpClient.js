@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // Base Axios instance
 const http = axios.create({
@@ -80,7 +81,6 @@ http.interceptors.response.use(
           `${import.meta.env.VITE_API_BASE_URL || '/api'}api/token/refresh/`,
           { refresh: localStorage.getItem('refresh') }
         );
-
         const { access, refresh } = response.data;
         
         // Update tokens
@@ -100,6 +100,7 @@ http.interceptors.response.use(
         processQueue(refreshError, null);
         clearTokens();
         window.location.href = '/login';
+        toast.error('Session expired, please login again');
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -150,8 +151,8 @@ export function setAuthToken(token, refreshToken = null) {
 
 export function clearTokens() {
   try {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
   } catch (_) {}
 }
 

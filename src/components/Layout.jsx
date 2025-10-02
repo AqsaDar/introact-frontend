@@ -122,12 +122,12 @@ function Layout({ children }) {
       </div>
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden overflow-y-auto">
         {/* Header */}
         <Header onMenuToggle={toggleSidebar} showMenuButton={true} />
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1">
           <div className="py-6 h-full">{children}</div>
         </main>
 
