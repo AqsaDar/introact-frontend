@@ -19,8 +19,8 @@ const Header = ({ onMenuToggle, showMenuButton = false }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Show branding only on login page
-  const showBranding = location.pathname === '/login';
+  // Show branding on all pages
+  const showBranding = true;
 
   const handleLogout = () => {
     logout();
@@ -49,15 +49,15 @@ const Header = ({ onMenuToggle, showMenuButton = false }) => {
       <div className="flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         {/* Left side - Logo and Menu */}
         <div className="flex items-center">
-          {showMenuButton && (
+          {/* {showMenuButton && (
             <button
               onClick={onMenuToggle}
               className="text-gray-500 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-100 transition-colors mr-3"
             >
               <Menu className="w-6 h-6" />
             </button>
-          )}
-          
+          )} */}
+
           {/* Logo - Only show on login page */}
           {showBranding && (
             <Link to="/" className="flex items-center">
@@ -65,8 +65,12 @@ const Header = ({ onMenuToggle, showMenuButton = false }) => {
                 <Zap className="w-6 h-6 text-white" />
               </div>
               <div className="ml-3">
-                <h1 className="text-xl font-bold text-gray-900">Lead Enrichment System</h1>
-                <p className="text-sm text-gray-500 font-medium">Automation Platform</p>
+                <h1 className="text-xl font-bold text-gray-900">
+                  Lead Enrichment System
+                </h1>
+                <p className="text-sm text-gray-500 font-medium">
+                  Automation Platform
+                </p>
               </div>
             </Link>
           )}
@@ -100,9 +104,7 @@ const Header = ({ onMenuToggle, showMenuButton = false }) => {
                     <p className="text-sm font-medium text-gray-900">
                       {user.email || "User"}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      Account Settings
-                    </p>
+                    <p className="text-xs text-gray-500">Account Settings</p>
                   </div>
 
                   <div className="py-1">
@@ -115,19 +117,27 @@ const Header = ({ onMenuToggle, showMenuButton = false }) => {
                       Preferences
                     </button>
                     <button
-                      onClick={() => navigate('/invite-analyst')}
+                      onClick={() => navigate("/invite-analyst")}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                     >
-                      {
-                        user.is_superadmin ? (
-                          <>
-                            <svg className="w-4 h-4 mr-3 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-                            Invite Analyst
-                          </>
-                        ) : (
-                          <></>
-                        )
-                      }
+                      {user.is_superadmin ? (
+                        <>
+                          <svg
+                            className="w-4 h-4 mr-3 text-gray-400"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M12 5v14M5 12h14" />
+                          </svg>
+                          Invite Analyst
+                        </>
+                      ) : (
+                        <></>
+                      )}
                     </button>
                   </div>
 
