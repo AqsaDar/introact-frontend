@@ -51,6 +51,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   const [attachmentClicked, setAttachmentClicked] = useState(false);
   const [copiedItems, setCopiedItems] = useState({});
   const [showDropdown, setShowDropdown] = useState(null);
+  const [dropdownCoords, setDropdownCoords] = useState({ top: 0, left: 0 });
+  const [dropdownOpensUp, setDropdownOpensUp] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState(null);
   useEffect(() => {
@@ -117,6 +119,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
 
   const copyToClipboard = async (text, type, rowId) => {
     try {
+      debugger
       await navigator.clipboard.writeText(text);
       const itemKey = `${rowId}-${type}`;
       setCopiedItems((prev) => ({ ...prev, [itemKey]: true }));
@@ -136,6 +139,33 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   const isUrl = (value) =>
     typeof value === "string" && /^https?:\/\//i.test(value);
 
+  const openActionsDropdown = (event, idx) => {
+    try {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const menuWidth = 192; // w-48
+      const menuHeight = 160; // approx height
+      const padding = 8;
+
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const opensUp = spaceBelow < menuHeight + padding;
+
+      const top = opensUp
+        ? Math.max(padding, rect.top - menuHeight)
+        : Math.min(window.innerHeight - menuHeight - padding, rect.bottom);
+
+      const left = Math.min(
+        Math.max(padding, rect.right - menuWidth),
+        window.innerWidth - menuWidth - padding
+      );
+
+      setDropdownCoords({ top, left });
+      setDropdownOpensUp(opensUp);
+      setShowDropdown(idx);
+    } catch (_) {
+      setShowDropdown(idx);
+    }
+  };
+
   const handleEditCompany = (row) => {
     setEditingCompany(row);
     setIsEditModalOpen(true);
@@ -146,7 +176,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     setEditingCompany(null);
   };
 
-  const handleEditModalSave = (updatedCompany,edited_row_id) => {
+  const handleEditModalSave = (updatedCompany, edited_row_id) => {
     setEditedData((prev) => {
       const copy = [...(prev || [])];
       const index = copy.findIndex((r) => r?.id === edited_row_id);
@@ -313,7 +343,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                   setSearchTerm(e.target.value);
                   setCurrentPage(0);
                 }}
-                className="block w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-white shadow-sm"
+                className="block w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl text-sm bg-white shadow-sm focus-visible:outline-none"
               />
               {searchTerm && (
                 <button
@@ -612,7 +642,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                 )}
                               </div>
                             ) : (
-                              <span className="text-sm text-gray-900 break-words">
+                              <span className="text-sm text-gray-900 break-all">
                                 {[
                                   "company_name",
                                   "contact_person",
@@ -634,8 +664,10 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                       <td className="px-4 py-3 text-center align-top">
                         <div className="relative">
                           <button
-                            onClick={() =>
-                              setShowDropdown(showDropdown === idx ? null : idx)
+                            onClick={(e) =>
+                              showDropdown === idx
+                                ? setShowDropdown(null)
+                                : openActionsDropdown(e, idx)
                             }
                             className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
                             title="More actions"
@@ -644,7 +676,13 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                           </button>
 
                           {showDropdown === idx && (
-                            <div className="absolute right-0 top-10 z-20 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                            <div
+                              className="fixed z-50 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+                              style={{
+                                top: dropdownCoords.top,
+                                left: dropdownCoords.left,
+                              }}
+                            >
                               <button
                                 onClick={() => {
                                   handleEditCompany(row);
@@ -712,8 +750,10 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         {/* Three Dots Menu */}
                         <div className="relative">
                           <button
-                            onClick={() =>
-                              setShowDropdown(showDropdown === idx ? null : idx)
+                            onClick={(e) =>
+                              showDropdown === idx
+                                ? setShowDropdown(null)
+                                : openActionsDropdown(e, idx)
                             }
                             className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
                             title="More actions"
@@ -722,7 +762,13 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                           </button>
 
                           {showDropdown === idx && (
-                            <div className="absolute right-0 top-10 z-20 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                            <div
+                              className="fixed z-50 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+                              style={{
+                                top: dropdownCoords.top,
+                                left: dropdownCoords.left,
+                              }}
+                            >
                               <button
                                 onClick={() => {
                                   handleEditCompany(row);
@@ -762,13 +808,13 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                     {/* All Fields Display */}
                     <div className="space-y-3 mb-4">
                       {/* Website */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
+                      <div className="flex justify-between items-start">
+                        <span className="text-sm font-medium text-gray-500 pr-2">
                           Website
                         </span>
                         <div className="flex items-center gap-2">
                           {row.website ? (
-                            <span className="text-sm text-gray-900 break-words">
+                            <span className="text-sm text-gray-900 break-all">
                               {row.website}
                             </span>
                           ) : (
@@ -778,13 +824,13 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                       </div>
 
                       {/* Email */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
+                      <div className="flex justify-between items-start">
+                        <span className="text-sm font-medium text-gray-500 pr-2">
                           Email
                         </span>
                         <div className="flex items-center gap-2">
                           {row.email ? (
-                            <span className="text-sm text-gray-900 break-words">
+                            <span className="text-sm text-gray-900 break-all">
                               {row.email}
                             </span>
                           ) : (
@@ -794,8 +840,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                       </div>
 
                       {/* Phone */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
+                      <div className="flex justify-between items-start">
+                        <span className="text-sm font-medium text-gray-500 pr-2">
                           Phone
                         </span>
                         <span className="text-sm text-gray-900 font-semibold">
@@ -806,8 +852,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                       </div>
 
                       {/* Industry */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
+                      <div className="flex justify-between items-start">
+                        <span className="text-sm font-medium text-gray-500 pr-2">
                           Industry
                         </span>
                         <span className="text-sm text-gray-600">
@@ -818,8 +864,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                       </div>
 
                       {/* Revenue */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
+                      <div className="flex justify-between items-start">
+                        <span className="text-sm font-medium text-gray-500 pr-2">
                           Revenue
                         </span>
                         <span className="text-sm text-gray-600">
@@ -832,8 +878,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                       </div>
 
                       {/* Employees */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
+                      <div className="flex justify-between items-start">
+                        <span className="text-sm font-medium text-gray-500 pr-2">
                           Employees
                         </span>
                         <span className="text-sm text-gray-600">
@@ -844,8 +890,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                       </div>
 
                       {/* HQ Location */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
+                      <div className="flex justify-between items-start">
+                        <span className="text-sm font-medium text-gray-500 pr-2">
                           HQ Location
                         </span>
                         <span
@@ -859,8 +905,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                       </div>
 
                       {/* Contact Person */}
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">
+                      <div className="flex justify-between items-start">
+                        <span className="text-sm font-medium text-gray-500 pr-2">
                           Contact Person
                         </span>
                         <span
@@ -876,16 +922,16 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
 
                     {/* Notes and Attachments */}
                     <div className="space-y-3 mb-6">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500 mb-1">
+                      <div className="flex justify-between items-start">
+                        <span className="text-sm font-medium text-gray-500 mb-1 pr-2">
                           Notes
                         </span>
                         {renderNotesDisplay(row.notes_count, () =>
                           openUploadModal(idx, true, false)
                         )}
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500 mb-1">
+                      <div className="flex justify-between items-start">
+                        <span className="text-sm font-medium text-gray-500 mb-1 pr-2">
                           Attachment
                         </span>
                         {renderFileDisplay(row.attachments_count, () =>
@@ -901,7 +947,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
         )}
         {/* Footer with Pagination Only */}
         <div className="px-8 py-6 bg-gray-50 border-t border-gray-200 flex-shrink-0">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-end">
             {/* Pagination */}
             {filteredData.length > 0 && (
               <div className="flex items-center gap-3">

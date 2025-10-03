@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { deleteRequest, postRequest, uploadFile } from "../utils/httpClient";
 import Loader from "./Loader";
 import { X, Check } from "lucide-react";
+import { toast } from "react-toastify";
 
 export const AddNotesAndFileModel = ({
   isUploadOpen,
@@ -62,7 +63,7 @@ export const AddNotesAndFileModel = ({
       let updatedNotes = [...tempNotes];
       updatedNotes[index] = { ...res.data };
       setTempNotes(updatedNotes);
-      // toast.success("Note saved successfully");
+      toast.success("Note saved successfully");
     } else {
       toast.error("Failed to save note");
     }
@@ -123,6 +124,7 @@ export const AddNotesAndFileModel = ({
       let updatedAttachments = [...tempAttachmentFiles];
       updatedAttachments[index] = { ...res.data };
       setTempAttachmentFiles(updatedAttachments);
+      toast.success("Attachment saved successfully");
     }
     setLoading(false);
   };
@@ -137,10 +139,10 @@ export const AddNotesAndFileModel = ({
             onChange={(e) => updateNote(index, e.target.value)}
             placeholder="Enter note..."
             disabled={note.id !== "0"}
-            className={`w-full px-3 py-2 border rounded-md text-sm ${
+            className={`w-full px-3 py-2 border rounded-md text-sm focus-visible:outline-none ${
               note.id !== "0"
                 ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                : "border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                : "border-gray-300"
             }`}
           />
           {note.id !== "0" && (
@@ -190,7 +192,7 @@ export const AddNotesAndFileModel = ({
             onChange={(e) => handleFileChange(index, e)}
             accept=".pdf,.doc,.docx,.xls,.xlsx"
             disabled={attachment.id !== "0"}
-            className="hidden"
+            className="hidden focus-visible:outline-none"
           />
           {/* attachment button div */}
           <div className="relative group">
@@ -211,7 +213,7 @@ export const AddNotesAndFileModel = ({
             )}
           </div>
           {/* attachment file name */}
-          <span className="text-sm text-gray-500 break-words" style={{wordBreak: "break-word"}}>
+          <span className="text-sm text-gray-500 break-words flex-1" style={{wordBreak: "break-word"}}>
             {attachment.id == "0" 
             ? attachment?.file?.name : <a href={attachment?.file} className="text-blue-500" target="_blank" rel="noopener noreferrer">{attachment?.file}</a>}
           </span>

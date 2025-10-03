@@ -11,14 +11,15 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Pipeline from "./pages/Pipeline";
 import React from "react";
+import NotFound from "./pages/NotFound";
 import Reports from "./pages/Reports";
 import Upload from "./pages/Upload";
 import Kanban from "./pages/Kanban";
 import EmailTemplates from "./pages/EmailTemplates";
 import InviteAnalyst from "./pages/InviteAnalyst";
 import VapiIntegration from "./pages/VapiIntegration";
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -64,19 +65,19 @@ const AppContent = () => {
             }
           />
           {user?.is_superadmin ? (
-              <Route
-                path="/invite-analyst"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <InviteAnalyst />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-            ) : (
-              <></>)
-          }
+            <Route
+              path="/invite-analyst"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <InviteAnalyst />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+          ) : (
+            <></>
+          )}
           {/* Protected Routes */}
           <Route
             path="/"
@@ -141,7 +142,7 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 {/* <Layout> */}
-                  <VapiIntegration />
+                <VapiIntegration />
                 {/* </Layout> */}
               </ProtectedRoute>
             }
@@ -156,26 +157,35 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
+          {/* Catch-all 404 */}
+          <Route
+            path="*"
+            element={
+              <Layout>
+                <NotFound />
+              </Layout>
+            }
+          />
         </Routes>
       </div>
     </Router>
   );
-}
+};
 
 export const App = () => {
   return (
     <AuthProvider>
       <ToastContainer
-          position='top-right'
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       <AppContent />
     </AuthProvider>
   );

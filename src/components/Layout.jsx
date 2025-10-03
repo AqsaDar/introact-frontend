@@ -230,7 +230,7 @@ function SidebarContent({ onLogout, collapsed = false, onToggle }) {
       </nav>
 
       {/* Logout Button */}
-      <div className="p-2 border-t border-gray-200">
+      <div className={`${collapsed ? "p-2" : "p-4"} border-t border-gray-200`}>
         <button
           onClick={onLogout}
           className={`w-full flex items-center justify-center rounded-lg border border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-all duration-200 ${
