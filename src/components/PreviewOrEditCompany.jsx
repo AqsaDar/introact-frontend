@@ -2,7 +2,14 @@ import React, { useEffect, useState, useMemo } from "react";
 import { getRequest, postRequest, putRequest } from "../utils/httpClient";
 import Loader from "./Loader";
 import { AddNotesAndFileModel } from "./AddNotesAndFileModel";
-import { Plus, MoreVertical, Copy, Edit, FileText, Paperclip } from "lucide-react";
+import {
+  Plus,
+  MoreVertical,
+  Copy,
+  Edit,
+  FileText,
+  Paperclip,
+} from "lucide-react";
 import { toast } from "react-toastify";
 
 const columns = [
@@ -125,46 +132,45 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     try {
       await navigator.clipboard.writeText(text);
       const itemKey = `${rowId}-${type}`;
-      setCopiedItems(prev => ({ ...prev, [itemKey]: true }));
+      setCopiedItems((prev) => ({ ...prev, [itemKey]: true }));
       // toast.success(`${type} copied to clipboard`);
       setTimeout(() => {
-        setCopiedItems(prev => {
+        setCopiedItems((prev) => {
           const newState = { ...prev };
           delete newState[itemKey];
           return newState;
         });
       }, 2000);
     } catch (err) {
-      toast.error('Failed to copy to clipboard');
+      toast.error("Failed to copy to clipboard");
     }
   };
 
   const isUrl = (value) =>
     typeof value === "string" && /^https?:\/\//i.test(value);
   const isRowEditing = (indexOnPage) => editingRows.has(offset + indexOnPage);
-  const toggleRowEditing = async (indexOnPage,row) => {
-    try 
-    {
-        if (isRowEditing(indexOnPage)) {
-        let row_to_edit = editedData.filter(r=>r.id == row.id)[0] = row;
+  const toggleRowEditing = async (indexOnPage, row) => {
+    try {
+      if (isRowEditing(indexOnPage)) {
+        let row_to_edit = (editedData.filter((r) => r.id == row.id)[0] = row);
         setIsSaving(true);
         const { notes, attachment, id, ...otherData } = row_to_edit;
-        let res = await putRequest(
-          `user/companies/${row?.id}/`,
-          { ...otherData }
-        );
-          setEditedData((prev) => {
-            const copy = [...(prev || [])];
-            copy[editedData.findIndex(r=>r.id == row.id)] = { ...copy[editedData.findIndex(r=>r.id == row.id)], ...res.data };
-            return copy;
-          });
+        let res = await putRequest(`user/companies/${row?.id}/`, {
+          ...otherData,
+        });
+        setEditedData((prev) => {
+          const copy = [...(prev || [])];
+          copy[editedData.findIndex((r) => r.id == row.id)] = {
+            ...copy[editedData.findIndex((r) => r.id == row.id)],
+            ...res.data,
+          };
+          return copy;
+        });
         setIsSaving(false);
       }
-    }
-    catch (err) {
+    } catch (err) {
       toast.error(err?.message || "Failed to save");
-    }
-    finally {
+    } finally {
       setIsSaving(false);
     }
     const globalIndex = offset + indexOnPage;
@@ -177,7 +183,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   };
 
   // Upload modal helpers - for both notes and attachments
-  const openUploadModal = (indexOnPage,note_click,attachment_click) => {
+  const openUploadModal = (indexOnPage, note_click, attachment_click) => {
     const globalIndex = currentPage * rowsPerPage + indexOnPage;
     const row = filteredData[globalIndex];
     setAttachmentUploadRow(row);
@@ -219,7 +225,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     return (
       <div className="flex items-center justify-center gap-3">
         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-800 border border-gray-300 shadow-sm">
-          {notesCount} 
+          {notesCount}
           {/* note{notesCount !== 1 ? 's' : ''} */}
         </span>
         {/* <button
@@ -239,7 +245,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
     return (
       <div className="flex items-center justify-center gap-3">
         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-800 border border-gray-300 shadow-sm">
-          {attachmentCount} 
+          {attachmentCount}
           {/* attachment{attachmentCount !== 1 ? 's' : ''} */}
         </span>
         {/* <button
@@ -257,12 +263,12 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showDropdown !== null && !event.target.closest('.relative')) {
+      if (showDropdown !== null && !event.target.closest(".relative")) {
         setShowDropdown(null);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showDropdown]);
 
   return (
@@ -557,9 +563,13 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                             className="px-4 py-3 text-sm align-top break-words text-center"
                           >
                             {isAttachment ? (
-                              renderFileDisplay(row[c.key],() => openUploadModal(idx,false,true))
+                              renderFileDisplay(row[c.key], () =>
+                                openUploadModal(idx, false, true)
+                              )
                             ) : isNotes ? (
-                              renderNotesDisplay(row[c.key],() => openUploadModal(idx,true,false))
+                              renderNotesDisplay(row[c.key], () =>
+                                openUploadModal(idx, true, false)
+                              )
                             ) : isWebsite ? (
                               editing ? (
                                 <div className="relative">
@@ -602,13 +612,29 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                 <div className="cursor-pointer text-sm break-words flex items-center justify-center gap-2">
                                   {row[c.key] ? (
                                     <button
-                                      onClick={() => copyToClipboard(normalizeUrl(row[c.key]), 'Website', row.id || offset + idx)}
+                                      onClick={() =>
+                                        copyToClipboard(
+                                          normalizeUrl(row[c.key]),
+                                          "Website",
+                                          row.id || offset + idx
+                                        )
+                                      }
                                       className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
-                                      title={copiedItems[`${row.id || offset + idx}-Website`] ? 'Copied!' : `Copy ${normalizeUrl(row[c.key])}`}
+                                      title={
+                                        copiedItems[
+                                          `${row.id || offset + idx}-Website`
+                                        ]
+                                          ? "Copied!"
+                                          : `Copy ${normalizeUrl(row[c.key])}`
+                                      }
                                     >
                                       <span className="text-lg">🌐</span>
-                                      {copiedItems[`${row.id || offset + idx}-Website`] && (
-                                        <span className="text-xs text-green-600 font-medium">Copied!</span>
+                                      {copiedItems[
+                                        `${row.id || offset + idx}-Website`
+                                      ] && (
+                                        <span className="text-xs text-green-600 font-medium">
+                                          Copied!
+                                        </span>
                                       )}
                                     </button>
                                   ) : (
@@ -630,31 +656,56 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                 } break-words`}
                                 placeholder={isEmpty ? "Required field" : ""}
                               />
-                            ) : (
-                              c.key === "email" ? (
-                                <div className="cursor-pointer text-sm break-words flex items-center justify-center gap-2">
-                                  {row[c.key] ? (
-                                    <button
-                                      onClick={() => copyToClipboard(row[c.key], 'Email', row.id || offset + idx)}
-                                      className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
-                                      title={copiedItems[`${row.id || offset + idx}-Email`] ? 'Copied!' : `Copy ${row[c.key]}`}
-                                    >
-                                      <span className="text-lg">✉️</span>
-                                      {copiedItems[`${row.id || offset + idx}-Email`] && (
-                                        <span className="text-xs text-green-600 font-medium">Copied!</span>
-                                      )}
-                                    </button>
-                                  ) : (
-                                    <span className="text-gray-400">—</span>
-                                  )}
-                                </div>
-                              ) : (
-                              <span className="text-sm text-gray-900 break-words">
-                                 {(["company_name","contact_person","phone"].includes(c.key) && !isRowEditing(idx)) ? <span className="font-semibold text-gray-900">{row[c.key]}</span> : (row[c.key] ?? (
+                            ) : c.key === "email" ? (
+                              <div className="cursor-pointer text-sm break-words flex items-center justify-center gap-2">
+                                {row[c.key] ? (
+                                  <button
+                                    onClick={() =>
+                                      copyToClipboard(
+                                        row[c.key],
+                                        "Email",
+                                        row.id || offset + idx
+                                      )
+                                    }
+                                    className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
+                                    title={
+                                      copiedItems[
+                                        `${row.id || offset + idx}-Email`
+                                      ]
+                                        ? "Copied!"
+                                        : `Copy ${row[c.key]}`
+                                    }
+                                  >
+                                    <span className="text-lg">✉️</span>
+                                    {copiedItems[
+                                      `${row.id || offset + idx}-Email`
+                                    ] && (
+                                      <span className="text-xs text-green-600 font-medium">
+                                        Copied!
+                                      </span>
+                                    )}
+                                  </button>
+                                ) : (
                                   <span className="text-gray-400">—</span>
-                                ))}
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-900 break-words">
+                                {[
+                                  "company_name",
+                                  "contact_person",
+                                  "phone",
+                                ].includes(c.key) && !isRowEditing(idx) ? (
+                                  <span className="font-semibold text-gray-900">
+                                    {row[c.key]}
+                                  </span>
+                                ) : (
+                                  row[c.key] ?? (
+                                    <span className="text-gray-400">—</span>
+                                  )
+                                )}
                               </span>
-                            ))}
+                            )}
                             {editing &&
                               isEmpty &&
                               !isAttachment &&
@@ -669,13 +720,15 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                       <td className="px-4 py-3 text-center align-top">
                         <div className="relative">
                           <button
-                            onClick={() => setShowDropdown(showDropdown === idx ? null : idx)}
+                            onClick={() =>
+                              setShowDropdown(showDropdown === idx ? null : idx)
+                            }
                             className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
                             title="More actions"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
-                          
+
                           {showDropdown === idx && (
                             <div className="absolute right-0 top-10 z-20 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
                               <button
@@ -686,7 +739,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                               >
                                 <Edit className="w-4 h-4" />
-                                {isRowEditing(idx) ? 'Done' : 'Edit'}
+                                {isRowEditing(idx) ? "Done" : "Edit"}
                               </button>
                               <button
                                 onClick={() => {
@@ -744,7 +797,9 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                           <input
                             type="text"
                             value={row.company_name ?? ""}
-                            onChange={(e) => handleChange(idx, "company_name", e.target.value)}
+                            onChange={(e) =>
+                              handleChange(idx, "company_name", e.target.value)
+                            }
                             className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                             placeholder="Company Name"
                           />
@@ -756,13 +811,15 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         {/* Three Dots Menu */}
                         <div className="relative">
                           <button
-                            onClick={() => setShowDropdown(showDropdown === idx ? null : idx)}
+                            onClick={() =>
+                              setShowDropdown(showDropdown === idx ? null : idx)
+                            }
                             className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
                             title="More actions"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
-                          
+
                           {showDropdown === idx && (
                             <div className="absolute right-0 top-10 z-20 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
                               <button
@@ -773,7 +830,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                               >
                                 <Edit className="w-4 h-4" />
-                                {editing ? 'Done' : 'Edit'}
+                                {editing ? "Done" : "Edit"}
                               </button>
                               <button
                                 onClick={() => {
@@ -805,13 +862,17 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                     <div className="space-y-3 mb-4">
                       {/* Website */}
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">Website</span>
+                        <span className="text-sm font-medium text-gray-500">
+                          Website
+                        </span>
                         {editing ? (
                           <div className="relative">
                             <input
                               type="url"
                               value={row.website ?? ""}
-                              onChange={(e) => handleChange(idx, "website", e.target.value)}
+                              onChange={(e) =>
+                                handleChange(idx, "website", e.target.value)
+                              }
                               className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                               placeholder="Website URL"
                             />
@@ -823,7 +884,12 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                 title={normalizeUrl(row.website)}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                               >
-                                <svg className="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <svg
+                                  className="w-3 h-3"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                >
                                   <path d="M13.172 7l-1.414 1.414 2.121 2.121-4.95 4.95a3 3 0 01-4.243-4.243l3.536-3.536-1.414-1.414-3.536 3.536a5 5 0 107.071 7.071l4.95-4.95 2.121 2.121L17 13.172V7h-6.172z" />
                                 </svg>
                               </a>
@@ -833,13 +899,29 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                           <div className="flex items-center gap-2">
                             {row.website ? (
                               <button
-                                onClick={() => copyToClipboard(normalizeUrl(row.website), 'Website', row.id || offset + idx)}
+                                onClick={() =>
+                                  copyToClipboard(
+                                    normalizeUrl(row.website),
+                                    "Website",
+                                    row.id || offset + idx
+                                  )
+                                }
                                 className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
-                                title={copiedItems[`${row.id || offset + idx}-Website`] ? 'Copied!' : `Copy ${normalizeUrl(row.website)}`}
+                                title={
+                                  copiedItems[
+                                    `${row.id || offset + idx}-Website`
+                                  ]
+                                    ? "Copied!"
+                                    : `Copy ${normalizeUrl(row.website)}`
+                                }
                               >
                                 <span className="text-lg">🌐</span>
-                                {copiedItems[`${row.id || offset + idx}-Website`] && (
-                                  <span className="text-xs text-green-600 font-medium">Copied!</span>
+                                {copiedItems[
+                                  `${row.id || offset + idx}-Website`
+                                ] && (
+                                  <span className="text-xs text-green-600 font-medium">
+                                    Copied!
+                                  </span>
                                 )}
                               </button>
                             ) : (
@@ -851,12 +933,16 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
 
                       {/* Email */}
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">Email</span>
+                        <span className="text-sm font-medium text-gray-500">
+                          Email
+                        </span>
                         {editing ? (
                           <input
                             type="email"
                             value={row.email ?? ""}
-                            onChange={(e) => handleChange(idx, "email", e.target.value)}
+                            onChange={(e) =>
+                              handleChange(idx, "email", e.target.value)
+                            }
                             className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                             placeholder="Email address"
                           />
@@ -864,13 +950,27 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                           <div className="flex items-center gap-2">
                             {row.email ? (
                               <button
-                                onClick={() => copyToClipboard(row.email, 'Email', row.id || offset + idx)}
+                                onClick={() =>
+                                  copyToClipboard(
+                                    row.email,
+                                    "Email",
+                                    row.id || offset + idx
+                                  )
+                                }
                                 className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
-                                title={copiedItems[`${row.id || offset + idx}-Email`] ? 'Copied!' : `Copy ${row.email}`}
+                                title={
+                                  copiedItems[`${row.id || offset + idx}-Email`]
+                                    ? "Copied!"
+                                    : `Copy ${row.email}`
+                                }
                               >
                                 <span className="text-lg">✉️</span>
-                                {copiedItems[`${row.id || offset + idx}-Email`] && (
-                                  <span className="text-xs text-green-600 font-medium">Copied!</span>
+                                {copiedItems[
+                                  `${row.id || offset + idx}-Email`
+                                ] && (
+                                  <span className="text-xs text-green-600 font-medium">
+                                    Copied!
+                                  </span>
                                 )}
                               </button>
                             ) : (
@@ -882,108 +982,156 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
 
                       {/* Phone */}
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">Phone</span>
+                        <span className="text-sm font-medium text-gray-500">
+                          Phone
+                        </span>
                         {editing ? (
                           <input
                             type="tel"
                             value={row.phone ?? ""}
-                            onChange={(e) => handleChange(idx, "phone", e.target.value)}
+                            onChange={(e) =>
+                              handleChange(idx, "phone", e.target.value)
+                            }
                             className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                             placeholder="Phone number"
                           />
                         ) : (
                           <span className="text-sm text-gray-900 font-semibold">
-                            {row.phone || <span className="text-gray-400">—</span>}
+                            {row.phone || (
+                              <span className="text-gray-400">—</span>
+                            )}
                           </span>
                         )}
                       </div>
 
                       {/* Industry */}
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">Industry</span>
+                        <span className="text-sm font-medium text-gray-500">
+                          Industry
+                        </span>
                         {editing ? (
                           <input
                             type="text"
                             value={row.industry ?? ""}
-                            onChange={(e) => handleChange(idx, "industry", e.target.value)}
+                            onChange={(e) =>
+                              handleChange(idx, "industry", e.target.value)
+                            }
                             className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                             placeholder="Industry"
                           />
                         ) : (
                           <span className="text-sm text-gray-600">
-                            {row.industry || <span className="text-gray-400">—</span>}
+                            {row.industry || (
+                              <span className="text-gray-400">—</span>
+                            )}
                           </span>
                         )}
                       </div>
 
                       {/* Revenue */}
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">Revenue</span>
+                        <span className="text-sm font-medium text-gray-500">
+                          Revenue
+                        </span>
                         {editing ? (
                           <input
                             type="number"
                             value={row.revenue ?? ""}
-                            onChange={(e) => handleChange(idx, "revenue", e.target.value)}
+                            onChange={(e) =>
+                              handleChange(idx, "revenue", e.target.value)
+                            }
                             className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                             placeholder="Revenue"
                           />
                         ) : (
                           <span className="text-sm text-gray-600">
-                            {row.revenue ? `$${row.revenue}M` : <span className="text-gray-400">—</span>}
+                            {row.revenue ? (
+                              `$${row.revenue}M`
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
                           </span>
                         )}
                       </div>
 
                       {/* Employees */}
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">Employees</span>
+                        <span className="text-sm font-medium text-gray-500">
+                          Employees
+                        </span>
                         {editing ? (
                           <input
                             type="number"
                             value={row.employees ?? ""}
-                            onChange={(e) => handleChange(idx, "employees", e.target.value)}
+                            onChange={(e) =>
+                              handleChange(idx, "employees", e.target.value)
+                            }
                             className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                             placeholder="Employees"
                           />
                         ) : (
                           <span className="text-sm text-gray-600">
-                            {row.employees || <span className="text-gray-400">—</span>}
+                            {row.employees || (
+                              <span className="text-gray-400">—</span>
+                            )}
                           </span>
                         )}
                       </div>
 
                       {/* HQ Location */}
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">HQ Location</span>
+                        <span className="text-sm font-medium text-gray-500">
+                          HQ Location
+                        </span>
                         {editing ? (
                           <input
                             type="text"
                             value={row.hq_location ?? ""}
-                            onChange={(e) => handleChange(idx, "hq_location", e.target.value)}
+                            onChange={(e) =>
+                              handleChange(idx, "hq_location", e.target.value)
+                            }
                             className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                             placeholder="HQ Location"
                           />
                         ) : (
-                          <span className="text-sm text-gray-600 truncate ml-2" title={row.hq_location}>
-                            {row.hq_location || <span className="text-gray-400">—</span>}
+                          <span
+                            className="text-sm text-gray-600 truncate ml-2"
+                            title={row.hq_location}
+                          >
+                            {row.hq_location || (
+                              <span className="text-gray-400">—</span>
+                            )}
                           </span>
                         )}
                       </div>
 
                       {/* Contact Person */}
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500">Contact Person</span>
+                        <span className="text-sm font-medium text-gray-500">
+                          Contact Person
+                        </span>
                         {editing ? (
                           <input
                             type="text"
                             value={row.contact_person ?? ""}
-                            onChange={(e) => handleChange(idx, "contact_person", e.target.value)}
+                            onChange={(e) =>
+                              handleChange(
+                                idx,
+                                "contact_person",
+                                e.target.value
+                              )
+                            }
                             className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
                             placeholder="Contact Person"
                           />
                         ) : (
-                          <span className="text-sm text-gray-900 font-semibold truncate ml-2" title={row.contact_person}>
-                            {row.contact_person || <span className="text-gray-400">—</span>}
+                          <span
+                            className="text-sm text-gray-900 font-semibold truncate ml-2"
+                            title={row.contact_person}
+                          >
+                            {row.contact_person || (
+                              <span className="text-gray-400">—</span>
+                            )}
                           </span>
                         )}
                       </div>
@@ -992,12 +1140,20 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                     {/* Notes and Attachments */}
                     <div className="space-y-3 mb-6">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500 mb-1">Notes</span>
-                        {renderNotesDisplay(row.notes_count, () => openUploadModal(idx,true,false))}
+                        <span className="text-sm font-medium text-gray-500 mb-1">
+                          Notes
+                        </span>
+                        {renderNotesDisplay(row.notes_count, () =>
+                          openUploadModal(idx, true, false)
+                        )}
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-gray-500 mb-1">Attachment</span>
-                        {renderFileDisplay(row.attachments_count, () => openUploadModal(idx,false,true))}
+                        <span className="text-sm font-medium text-gray-500 mb-1">
+                          Attachment
+                        </span>
+                        {renderFileDisplay(row.attachments_count, () =>
+                          openUploadModal(idx, false, true)
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1015,52 +1171,21 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
                   disabled={currentPage === 0}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  <svg
-                    className="w-4 h-4 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                  Previous
+                  ← Previous
                 </button>
-                <div className="flex items-center bg-white border border-gray-300 rounded-lg">
-                  <span className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-l-lg">
-                    {currentPage + 1}
-                  </span>
-                  <span className="px-4 py-2 text-sm text-gray-500">
-                    of {pageCount}
-                  </span>
-                </div>
+                <span className="px-4 py-2 text-gray-700 rounded-lg text-sm font-medium">
+                  {currentPage + 1} / {pageCount}
+                </span>
                 <button
                   onClick={() =>
                     setCurrentPage((p) => Math.min(pageCount - 1, p + 1))
                   }
                   disabled={currentPage === pageCount - 1}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Next
-                  <svg
-                    className="w-4 h-4 ml-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
+                  Next →
                 </button>
               </div>
             )}
