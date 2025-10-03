@@ -126,7 +126,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
       await navigator.clipboard.writeText(text);
       const itemKey = `${rowId}-${type}`;
       setCopiedItems(prev => ({ ...prev, [itemKey]: true }));
-      toast.success(`${type} copied to clipboard`);
+      // toast.success(`${type} copied to clipboard`);
       setTimeout(() => {
         setCopiedItems(prev => {
           const newState = { ...prev };

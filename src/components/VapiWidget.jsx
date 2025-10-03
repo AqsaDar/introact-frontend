@@ -142,7 +142,7 @@ export const VapiWidget = ({apiKey, assistantId,sessionId, config}) => {
       {!isInitializing && !isConnected && (
         <div style={{display:'flex', flexDirection:'column', alignItems:'center', gap:12}}>
           <button
-            onClick={startCall}
+            // onClick={startCall}
             style={{
               background: '#12A594',
               color: '#fff',
