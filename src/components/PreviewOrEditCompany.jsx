@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { getRequest, postRequest, putRequest } from "../utils/httpClient";
 import Loader from "./Loader";
 import { AddNotesAndFileModel } from "./AddNotesAndFileModel";
+import EditCompanyModal from "./EditCompanyModal";
 import {
   Plus,
   MoreVertical,
@@ -44,13 +45,14 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   const [saveError, setSaveError] = useState("");
   const [viewMode, setViewMode] = useState("list"); // 'list' | 'grid'
   const [searchTerm, setSearchTerm] = useState("");
-  const [editingRows, setEditingRows] = useState(new Set());
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [attachmentUploadRow, setAttachmentUploadRow] = useState(null);
   const [noteClicked, setNoteClicked] = useState(false);
   const [attachmentClicked, setAttachmentClicked] = useState(false);
   const [copiedItems, setCopiedItems] = useState({});
   const [showDropdown, setShowDropdown] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingCompany, setEditingCompany] = useState(null);
   useEffect(() => {
     const newData = getInitialData();
     setData(newData);
@@ -86,21 +88,6 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   const issuesExist = content?.issues_exist || false;
   const processedRows = content?.processed_rows || 0;
   const capNote = content?.cap_note || "";
-
-  const handleChange = (indexOnPage, field, value) => {
-    const globalIndex = currentPage * rowsPerPage + indexOnPage;
-    const actualIndex = filteredData[globalIndex]
-      ? editedData.findIndex((row) => row === filteredData[globalIndex])
-      : -1;
-
-    if (actualIndex >= 0) {
-      setEditedData((prev) => {
-        const copy = [...(prev || [])];
-        copy[actualIndex] = { ...copy[actualIndex], [field]: value };
-        return copy;
-      });
-    }
-  };
 
   const handleCancel = () => {
     if (typeof onCancel === "function") onCancel();
@@ -148,38 +135,27 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
 
   const isUrl = (value) =>
     typeof value === "string" && /^https?:\/\//i.test(value);
-  const isRowEditing = (indexOnPage) => editingRows.has(offset + indexOnPage);
-  const toggleRowEditing = async (indexOnPage, row) => {
-    try {
-      if (isRowEditing(indexOnPage)) {
-        let row_to_edit = (editedData.filter((r) => r.id == row.id)[0] = row);
-        setIsSaving(true);
-        const { notes, attachment, id, ...otherData } = row_to_edit;
-        let res = await putRequest(`user/companies/${row?.id}/`, {
-          ...otherData,
-        });
-        setEditedData((prev) => {
-          const copy = [...(prev || [])];
-          copy[editedData.findIndex((r) => r.id == row.id)] = {
-            ...copy[editedData.findIndex((r) => r.id == row.id)],
-            ...res.data,
-          };
-          return copy;
-        });
-        setIsSaving(false);
+
+  const handleEditCompany = (row) => {
+    setEditingCompany(row);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditModalClose = () => {
+    setIsEditModalOpen(false);
+    setEditingCompany(null);
+  };
+
+  const handleEditModalSave = (updatedCompany,edited_row_id) => {
+    setEditedData((prev) => {
+      const copy = [...(prev || [])];
+      const index = copy.findIndex((r) => r?.id === edited_row_id);
+      if (index >= 0) {
+        copy[index] = { ...copy[index], ...updatedCompany };
       }
-    } catch (err) {
-      toast.error(err?.message || "Failed to save");
-    } finally {
-      setIsSaving(false);
-    }
-    const globalIndex = offset + indexOnPage;
-    setEditingRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(globalIndex)) next.delete(globalIndex);
-      else next.add(globalIndex);
-      return next;
+      return copy;
     });
+    handleEditModalClose();
   };
 
   // Upload modal helpers - for both notes and attachments
@@ -555,7 +531,6 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         const isWebsite = c.key === "website";
                         const isAttachment = c.key === "attachments_count";
                         const isNotes = c.key === "notes_count";
-                        const editing = isRowEditing(idx);
 
                         return (
                           <td
@@ -571,91 +546,38 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                 openUploadModal(idx, true, false)
                               )
                             ) : isWebsite ? (
-                              editing ? (
-                                <div className="relative">
-                                  <input
-                                    type="url"
-                                    value={row[c.key] ?? ""}
-                                    onChange={(e) =>
-                                      handleChange(idx, c.key, e.target.value)
+                              <div className="cursor-pointer text-sm break-words flex items-center justify-center gap-2">
+                                {row[c.key] ? (
+                                  <button
+                                    onClick={() =>
+                                      copyToClipboard(
+                                        normalizeUrl(row[c.key]),
+                                        "Website",
+                                        row.id || offset + idx
+                                      )
                                     }
-                                    title={row[c.key] ?? ""}
-                                    className={`w-full border px-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 ${
-                                      isEmpty || hasFieldIssue
-                                        ? "border-red-300 bg-red-50"
-                                        : "border-gray-300"
-                                    } break-words`}
-                                    placeholder={
-                                      isEmpty ? "Required field" : ""
-                                    }
-                                  />
-                                  {row[c.key] && (
-                                    <a
-                                      href={normalizeUrl(row[c.key])}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      title={normalizeUrl(row[c.key])}
-                                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700"
-                                    >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24"
-                                        fill="currentColor"
-                                        className="w-4 h-4"
-                                      >
-                                        <path d="M13.172 7l-1.414 1.414 2.121 2.121-4.95 4.95a3 3 0 01-4.243-4.243l3.536-3.536-1.414-1.414-3.536 3.536a5 5 0 107.071 7.071l4.95-4.95 2.121 2.121L17 13.172V7h-6.172z" />
-                                      </svg>
-                                    </a>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="cursor-pointer text-sm break-words flex items-center justify-center gap-2">
-                                  {row[c.key] ? (
-                                    <button
-                                      onClick={() =>
-                                        copyToClipboard(
-                                          normalizeUrl(row[c.key]),
-                                          "Website",
-                                          row.id || offset + idx
-                                        )
-                                      }
-                                      className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
-                                      title={
-                                        copiedItems[
-                                          `${row.id || offset + idx}-Website`
-                                        ]
-                                          ? "Copied!"
-                                          : `Copy ${normalizeUrl(row[c.key])}`
-                                      }
-                                    >
-                                      <span className="text-lg">🌐</span>
-                                      {copiedItems[
+                                    className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
+                                    title={
+                                      copiedItems[
                                         `${row.id || offset + idx}-Website`
-                                      ] && (
-                                        <span className="text-xs text-green-600 font-medium">
-                                          Copied!
-                                        </span>
-                                      )}
-                                    </button>
-                                  ) : (
-                                    <span className="text-gray-400">—</span>
-                                  )}
-                                </div>
-                              )
-                            ) : editing ? (
-                              <input
-                                type={c.type}
-                                value={row[c.key] ?? ""}
-                                onChange={(e) =>
-                                  handleChange(idx, c.key, e.target.value)
-                                }
-                                className={`w-full border px-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 ${
-                                  isEmpty || hasFieldIssue
-                                    ? "border-red-300 bg-red-50"
-                                    : "border-gray-300"
-                                } break-words`}
-                                placeholder={isEmpty ? "Required field" : ""}
-                              />
+                                      ]
+                                        ? "Copied!"
+                                        : `Copy ${normalizeUrl(row[c.key])}`
+                                    }
+                                  >
+                                    <span className="text-lg">🌐</span>
+                                    {copiedItems[
+                                      `${row.id || offset + idx}-Website`
+                                    ] && (
+                                      <span className="text-xs text-green-600 font-medium">
+                                        Copied!
+                                      </span>
+                                    )}
+                                  </button>
+                                ) : (
+                                  <span className="text-gray-400">—</span>
+                                )}
+                              </div>
                             ) : c.key === "email" ? (
                               <div className="cursor-pointer text-sm break-words flex items-center justify-center gap-2">
                                 {row[c.key] ? (
@@ -695,7 +617,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                   "company_name",
                                   "contact_person",
                                   "phone",
-                                ].includes(c.key) && !isRowEditing(idx) ? (
+                                ].includes(c.key) ? (
                                   <span className="font-semibold text-gray-900">
                                     {row[c.key]}
                                   </span>
@@ -706,14 +628,6 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                                 )}
                               </span>
                             )}
-                            {editing &&
-                              isEmpty &&
-                              !isAttachment &&
-                              !isNotes && (
-                                <div className="text-xs text-red-500 mt-1">
-                                  Empty field
-                                </div>
-                              )}
                           </td>
                         );
                       })}
@@ -733,13 +647,13 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                             <div className="absolute right-0 top-10 z-20 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
                               <button
                                 onClick={() => {
-                                  toggleRowEditing(idx, row);
+                                  handleEditCompany(row);
                                   setShowDropdown(null);
                                 }}
                                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                               >
                                 <Edit className="w-4 h-4" />
-                                {isRowEditing(idx) ? "Done" : "Edit"}
+                                Edit
                               </button>
                               <button
                                 onClick={() => {
@@ -781,7 +695,6 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
               style={{ maxHeight: "46vh" }}
             >
               {currentRows.map((row, idx) => {
-                const editing = isRowEditing(idx);
                 return (
                   <div
                     key={offset + idx}
@@ -793,19 +706,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         className="font-bold text-gray-900 text-lg truncate pr-2"
                         title={row.company_name}
                       >
-                        {editing ? (
-                          <input
-                            type="text"
-                            value={row.company_name ?? ""}
-                            onChange={(e) =>
-                              handleChange(idx, "company_name", e.target.value)
-                            }
-                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
-                            placeholder="Company Name"
-                          />
-                        ) : (
-                          row.company_name
-                        )}
+                        {row.company_name}
                       </h4>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {/* Three Dots Menu */}
@@ -824,13 +725,13 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                             <div className="absolute right-0 top-10 z-20 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
                               <button
                                 onClick={() => {
-                                  toggleRowEditing(idx, row);
+                                  handleEditCompany(row);
                                   setShowDropdown(null);
                                 }}
                                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                               >
                                 <Edit className="w-4 h-4" />
-                                {editing ? "Done" : "Edit"}
+                                Edit
                               </button>
                               <button
                                 onClick={() => {
@@ -865,70 +766,15 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         <span className="text-sm font-medium text-gray-500">
                           Website
                         </span>
-                        {editing ? (
-                          <div className="relative">
-                            <input
-                              type="url"
-                              value={row.website ?? ""}
-                              onChange={(e) =>
-                                handleChange(idx, "website", e.target.value)
-                              }
-                              className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
-                              placeholder="Website URL"
-                            />
-                            {row.website && (
-                              <a
-                                href={normalizeUrl(row.website)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title={normalizeUrl(row.website)}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                              >
-                                <svg
-                                  className="w-3 h-3"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  viewBox="0 0 24 24"
-                                  fill="currentColor"
-                                >
-                                  <path d="M13.172 7l-1.414 1.414 2.121 2.121-4.95 4.95a3 3 0 01-4.243-4.243l3.536-3.536-1.414-1.414-3.536 3.536a5 5 0 107.071 7.071l4.95-4.95 2.121 2.121L17 13.172V7h-6.172z" />
-                                </svg>
-                              </a>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            {row.website ? (
-                              <button
-                                onClick={() =>
-                                  copyToClipboard(
-                                    normalizeUrl(row.website),
-                                    "Website",
-                                    row.id || offset + idx
-                                  )
-                                }
-                                className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
-                                title={
-                                  copiedItems[
-                                    `${row.id || offset + idx}-Website`
-                                  ]
-                                    ? "Copied!"
-                                    : `Copy ${normalizeUrl(row.website)}`
-                                }
-                              >
-                                <span className="text-lg">🌐</span>
-                                {copiedItems[
-                                  `${row.id || offset + idx}-Website`
-                                ] && (
-                                  <span className="text-xs text-green-600 font-medium">
-                                    Copied!
-                                  </span>
-                                )}
-                              </button>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {row.website ? (
+                            <span className="text-sm text-gray-900 break-words">
+                              {row.website}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Email */}
@@ -936,48 +782,15 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         <span className="text-sm font-medium text-gray-500">
                           Email
                         </span>
-                        {editing ? (
-                          <input
-                            type="email"
-                            value={row.email ?? ""}
-                            onChange={(e) =>
-                              handleChange(idx, "email", e.target.value)
-                            }
-                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
-                            placeholder="Email address"
-                          />
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            {row.email ? (
-                              <button
-                                onClick={() =>
-                                  copyToClipboard(
-                                    row.email,
-                                    "Email",
-                                    row.id || offset + idx
-                                  )
-                                }
-                                className="flex items-center gap-2 hover:bg-gray-100 rounded px-2 py-1 transition-colors group"
-                                title={
-                                  copiedItems[`${row.id || offset + idx}-Email`]
-                                    ? "Copied!"
-                                    : `Copy ${row.email}`
-                                }
-                              >
-                                <span className="text-lg">✉️</span>
-                                {copiedItems[
-                                  `${row.id || offset + idx}-Email`
-                                ] && (
-                                  <span className="text-xs text-green-600 font-medium">
-                                    Copied!
-                                  </span>
-                                )}
-                              </button>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {row.email ? (
+                            <span className="text-sm text-gray-900 break-words">
+                              {row.email}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Phone */}
@@ -985,23 +798,11 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         <span className="text-sm font-medium text-gray-500">
                           Phone
                         </span>
-                        {editing ? (
-                          <input
-                            type="tel"
-                            value={row.phone ?? ""}
-                            onChange={(e) =>
-                              handleChange(idx, "phone", e.target.value)
-                            }
-                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
-                            placeholder="Phone number"
-                          />
-                        ) : (
-                          <span className="text-sm text-gray-900 font-semibold">
-                            {row.phone || (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </span>
-                        )}
+                        <span className="text-sm text-gray-900 font-semibold">
+                          {row.phone || (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </span>
                       </div>
 
                       {/* Industry */}
@@ -1009,23 +810,11 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         <span className="text-sm font-medium text-gray-500">
                           Industry
                         </span>
-                        {editing ? (
-                          <input
-                            type="text"
-                            value={row.industry ?? ""}
-                            onChange={(e) =>
-                              handleChange(idx, "industry", e.target.value)
-                            }
-                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
-                            placeholder="Industry"
-                          />
-                        ) : (
-                          <span className="text-sm text-gray-600">
-                            {row.industry || (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </span>
-                        )}
+                        <span className="text-sm text-gray-600">
+                          {row.industry || (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </span>
                       </div>
 
                       {/* Revenue */}
@@ -1033,25 +822,13 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         <span className="text-sm font-medium text-gray-500">
                           Revenue
                         </span>
-                        {editing ? (
-                          <input
-                            type="number"
-                            value={row.revenue ?? ""}
-                            onChange={(e) =>
-                              handleChange(idx, "revenue", e.target.value)
-                            }
-                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
-                            placeholder="Revenue"
-                          />
-                        ) : (
-                          <span className="text-sm text-gray-600">
-                            {row.revenue ? (
-                              `$${row.revenue}M`
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </span>
-                        )}
+                        <span className="text-sm text-gray-600">
+                          {row.revenue ? (
+                            `$${row.revenue}M`
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </span>
                       </div>
 
                       {/* Employees */}
@@ -1059,23 +836,11 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         <span className="text-sm font-medium text-gray-500">
                           Employees
                         </span>
-                        {editing ? (
-                          <input
-                            type="number"
-                            value={row.employees ?? ""}
-                            onChange={(e) =>
-                              handleChange(idx, "employees", e.target.value)
-                            }
-                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
-                            placeholder="Employees"
-                          />
-                        ) : (
-                          <span className="text-sm text-gray-600">
-                            {row.employees || (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </span>
-                        )}
+                        <span className="text-sm text-gray-600">
+                          {row.employees || (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </span>
                       </div>
 
                       {/* HQ Location */}
@@ -1083,26 +848,14 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         <span className="text-sm font-medium text-gray-500">
                           HQ Location
                         </span>
-                        {editing ? (
-                          <input
-                            type="text"
-                            value={row.hq_location ?? ""}
-                            onChange={(e) =>
-                              handleChange(idx, "hq_location", e.target.value)
-                            }
-                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
-                            placeholder="HQ Location"
-                          />
-                        ) : (
-                          <span
-                            className="text-sm text-gray-600 truncate ml-2"
-                            title={row.hq_location}
-                          >
-                            {row.hq_location || (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </span>
-                        )}
+                        <span
+                          className="text-sm text-gray-600 truncate ml-2"
+                          title={row.hq_location}
+                        >
+                          {row.hq_location || (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </span>
                       </div>
 
                       {/* Contact Person */}
@@ -1110,30 +863,14 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                         <span className="text-sm font-medium text-gray-500">
                           Contact Person
                         </span>
-                        {editing ? (
-                          <input
-                            type="text"
-                            value={row.contact_person ?? ""}
-                            onChange={(e) =>
-                              handleChange(
-                                idx,
-                                "contact_person",
-                                e.target.value
-                              )
-                            }
-                            className="w-full border px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
-                            placeholder="Contact Person"
-                          />
-                        ) : (
-                          <span
-                            className="text-sm text-gray-900 font-semibold truncate ml-2"
-                            title={row.contact_person}
-                          >
-                            {row.contact_person || (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </span>
-                        )}
+                        <span
+                          className="text-sm text-gray-900 font-semibold truncate ml-2"
+                          title={row.contact_person}
+                        >
+                          {row.contact_person || (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </span>
                       </div>
                     </div>
 
@@ -1199,6 +936,14 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
         row={attachmentUploadRow}
         note_clicked={noteClicked}
         attachment_clicked={attachmentClicked}
+      />
+
+      {/* Edit Company Modal */}
+      <EditCompanyModal
+        isOpen={isEditModalOpen}
+        onClose={handleEditModalClose}
+        company={editingCompany}
+        onSave={handleEditModalSave}
       />
     </div>
   );
