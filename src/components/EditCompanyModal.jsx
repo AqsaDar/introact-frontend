@@ -55,11 +55,15 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
       newErrors.phone = "Phone is required";
     }
 
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!formData.email?.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Please enter a valid email address";
     }
 
-    if (formData.website && !/^https?:\/\/.+/.test(formData.website)) {
+    if (!formData.website?.trim()) {
+      newErrors.website = "Website is required";
+    } else if (!/^https?:\/\/.+/.test(formData.website)) {
       newErrors.website =
         "Please enter a valid website URL (include http:// or https://)";
     }
@@ -153,10 +157,10 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
               )}
             </div>
 
-            {/* Website */}
+            {/* Website * */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Website
+                Website *
               </label>
               <input
                 type="url"
@@ -253,10 +257,10 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
               )}
             </div>
 
-            {/* Email */}
+            {/* Email * */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+                Email *
               </label>
               <input
                 type="email"
