@@ -7,12 +7,16 @@ import {
   putRequest,
 } from "../utils/httpClient";
 import EmailTemplateModal from "../components/EmailTemplateModal";
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
+import { toast } from "react-toastify";
 
 const EmailTemplates = () => {
   const [templates, setTemplates] = useState([]);
   const [open, setOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [toDelete, setToDelete] = useState(null);
 
   // ✅ Fetch templates
   useEffect(() => {
@@ -50,6 +54,7 @@ const EmailTemplates = () => {
       } else {
         await postRequest("/user/email-template/", payload);
       }
+      toast.success("Template saved successfully");
       fetchTemplates();
       handleClose();
     } catch (err) {
@@ -62,10 +67,18 @@ const EmailTemplates = () => {
   const handleDelete = async (id) => {
     try {
       await deleteRequest(`/user/email-template/${id}/`);
+      toast.success("Template deleted successfully");
       fetchTemplates();
+      setConfirmOpen(false);
+      setToDelete(null);
     } catch (err) {
       console.error("Error deleting template", err);
     }
+  };
+
+  const requestDelete = (template) => {
+    setToDelete(template);
+    setConfirmOpen(true);
   };
 
   return (
@@ -162,7 +175,7 @@ const EmailTemplates = () => {
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(t.id)}
+                          onClick={() => requestDelete(t)}
                           className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
                           title="Delete template"
                         >
@@ -214,6 +227,18 @@ const EmailTemplates = () => {
         onSave={handleSave}
         template={editingTemplate}
         isLoading={isLoading}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={confirmOpen}
+        title="Delete template?"
+        description={`Are you sure you want to delete this template?`}
+        fileName={toDelete?.name}
+        onCancel={() => {
+          setConfirmOpen(false);
+          setToDelete(null);
+        }}
+        onConfirm={() => toDelete && handleDelete(toDelete.id)}
       />
     </div>
   );

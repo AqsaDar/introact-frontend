@@ -269,7 +269,7 @@ const EmailTemplateModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-7xl max-h-[95vh] rounded-xl shadow-2xl overflow-hidden">
+      <div className="bg-white w-full max-w-7xl rounded-xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex justify-between items-center">
