@@ -187,7 +187,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="text"
                 value={formData.industry || ""}
                 onChange={(e) => handleChange("industry", e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500"
                 placeholder="Enter industry"
               />
             </div>
@@ -201,7 +201,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="number"
                 value={formData.revenue || ""}
                 onChange={(e) => handleChange("revenue", e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500"
                 placeholder="Enter revenue in millions"
               />
             </div>
@@ -215,7 +215,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="number"
                 value={formData.employees || ""}
                 onChange={(e) => handleChange("employees", e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500"
                 placeholder="Enter number of employees"
               />
             </div>
@@ -229,7 +229,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="text"
                 value={formData.hq_location || ""}
                 onChange={(e) => handleChange("hq_location", e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500"
                 placeholder="Enter headquarters location"
               />
             </div>
