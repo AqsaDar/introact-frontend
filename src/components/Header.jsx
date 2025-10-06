@@ -19,8 +19,8 @@ const Header = ({ onMenuToggle, showMenuButton = false }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Show branding only when not logged in (e.g., login page)
-  const showBranding = !user;
+  // Show branding in header across the app
+  const showBranding = true;
 
   const handleLogout = () => {
     logout();
@@ -45,7 +45,7 @@ const Header = ({ onMenuToggle, showMenuButton = false }) => {
   }, []);
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-40">
       <div className="flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         {/* Left side - Logo and Menu */}
         <div className="flex items-center">

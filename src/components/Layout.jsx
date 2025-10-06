@@ -132,7 +132,7 @@ function Layout({ children }) {
       )}
 
       {/* Desktop sidebar - Always visible on desktop, toggleable between expanded/collapsed */}
-      <div className="hidden lg:flex lg:flex-shrink-0 transition-all duration-300">
+      <div className="hidden lg:flex lg:flex-shrink-0 transition-all duration-300 pt-[72px]">
         <div
           className={`flex flex-col transition-all duration-300 ${
             sidebarCollapsed ? "w-16" : "w-72"
@@ -148,11 +148,11 @@ function Layout({ children }) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden overflow-y-auto">
-        {/* Header */}
+        {/* Header (fixed globally) */}
         <Header onMenuToggle={toggleSidebar} showMenuButton={true} />
 
         {/* Page content */}
-        <main className="flex-1">
+        <main className="flex-1 pt-[72px]">
           <div className="py-6 h-full">{children}</div>
         </main>
 
@@ -168,49 +168,20 @@ function SidebarContent({ onLogout, collapsed = false, onToggle }) {
 
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-white border-r border-gray-200">
-      {/* Branding + Collapse Toggle */}
-      <div className={`px-4 py-4 border-b border-gray-200`}>
-        {collapsed ? (
-          <div className="flex flex-col items-center">
-            <Link to="/" className="flex items-center">
-              <div className="flex items-center justify-center w-10 h-10 bg-gray-600 rounded-lg">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-            </Link>
-            <button
-              onClick={onToggle}
-              aria-label="Expand sidebar"
-              className="mt-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              title="Expand sidebar"
-            >
-              <ChevronRight className="w-4 h-4 text-gray-600" />
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center">
-              <div className="flex items-center justify-center w-10 h-10 bg-gray-600 rounded-lg">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <div className="ml-3">
-                <h1 className="text-base font-bold text-gray-900">
-                  Lead Enrichment System
-                </h1>
-                <p className="text-xs text-gray-500 font-medium">
-                  Automation Platform
-                </p>
-              </div>
-            </Link>
-            <button
-              onClick={onToggle}
-              aria-label="Collapse sidebar"
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors ml-2"
-              title="Collapse sidebar"
-            >
-              <ChevronLeft className="w-4 h-4 text-gray-600" />
-            </button>
-          </div>
-        )}
+      {/* Toggle only (no logo/name) */}
+      <div className="px-4 mt-6 border-gray-200 flex items-center justify-end">
+        <button
+          onClick={onToggle}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="w-10 h-10 rounded-full border border-gray-300 bg-white hover:bg-gray-50 shadow-md flex items-center justify-center transition-colors"
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? (
+            <ChevronRight className="w-5 h-5 text-gray-700" />
+          ) : (
+            <ChevronLeft className="w-5 h-5 text-gray-700" />
+          )}
+        </button>
       </div>
 
       {/* Navigation */}
