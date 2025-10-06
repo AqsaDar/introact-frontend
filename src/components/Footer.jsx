@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Zap, Mail, Phone, MapPin } from "lucide-react";
 
-const Footer = () => {
+const Footer = () => {  
   const currentYear = new Date().getFullYear();
 
   return (
@@ -28,7 +28,7 @@ const Footer = () => {
         </div> */}
 
         {/* Bottom Bar */}
-        <div className="border-gray-200 pt-6">
+        <div className="border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-gray-600 text-sm">
               © {currentYear} Lead Enrichment System. All rights reserved.

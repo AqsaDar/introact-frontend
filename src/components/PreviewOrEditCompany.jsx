@@ -39,12 +39,12 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
       }));
     }
   };
-  const [data, setData] = useState([]);
   const [editedData, setEditedData] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [viewMode, setViewMode] = useState("list"); // 'list' | 'grid'
   const [searchTerm, setSearchTerm] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [attachmentUploadRow, setAttachmentUploadRow] = useState(null);
   const [noteClicked, setNoteClicked] = useState(false);
@@ -57,10 +57,23 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
   const [editingCompany, setEditingCompany] = useState(null);
   useEffect(() => {
     const newData = getInitialData();
-    setData(newData);
     setEditedData(newData?.map((r) => ({ ...r })));
     setCurrentPage(0);
   }, [content]);
+
+  // Detect mobile (md breakpoint: 768px)
+  useEffect(() => {
+    const onResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setViewMode("grid");
+      }
+    };
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const rowsPerPage = 1000;
   const [currentPage, setCurrentPage] = useState(0);
@@ -119,7 +132,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
 
   const copyToClipboard = async (text, type, rowId) => {
     try {
-      debugger
+      debugger;
       await navigator.clipboard.writeText(text);
       const itemKey = `${rowId}-${type}`;
       setCopiedItems((prev) => ({ ...prev, [itemKey]: true }));
@@ -343,7 +356,7 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
                   setSearchTerm(e.target.value);
                   setCurrentPage(0);
                 }}
-                className="block w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl text-sm bg-white shadow-sm focus-visible:outline-none"
+                className="block w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl text-sm bg-white shadow-sm focus-visible:outline-none focus:border-blue-500 focus:outline focus:outline-sky-500"
               />
               {searchTerm && (
                 <button
@@ -374,8 +387,8 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
             )}
           </div>
 
-          {/* View Mode Tabs */}
-          <div className="flex items-center gap-3">
+          {/* View Mode Tabs (hidden on mobile) */}
+          <div className="hidden md:flex items-center gap-3">
             <span className="text-sm font-medium text-gray-700">View:</span>
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
@@ -517,14 +530,17 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
 
       {/* Main Content Area - Scrollable */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        {/* List View */}
-        {viewMode === "list" && filteredData.length > 0 && (
+        {/* List View (disabled on mobile) */}
+        {!isMobile && viewMode === "list" && filteredData.length > 0 && (
           <div
             className="mx-8 mt-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm flex-1 flex flex-col"
             style={{ maxHeight: "46vh" }}
           >
-            <div className="overflow-y-auto overflow-x-hidden flex-1">
-              <table className="w-full table-fixed divide-y divide-gray-200">
+            <div
+              className="overflow-y-auto overflow-x-auto flex-1"
+              onScroll={() => setShowDropdown(null)}
+            >
+              <table className="w-full min-w-[1200px] table-fixed divide-y divide-gray-200">
                 <thead className="bg-gray-50 sticky top-0 z-10 text-center">
                   <tr>
                     {columns.map((c) => (
@@ -727,7 +743,10 @@ export const PreviewOrEditCompany = ({ content, onSaved, onCancel }) => {
 
         {/* Grid View */}
         {viewMode === "grid" && filteredData.length > 0 && (
-          <div className="mx-8 mt-6 overflow-y-auto overflow-x-hidden flex-1">
+          <div
+            className="mx-8 mt-6 overflow-y-auto overflow-x-hidden flex-1"
+            onScroll={() => setShowDropdown(null)}
+          >
             <div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-6"
               style={{ maxHeight: "46vh" }}

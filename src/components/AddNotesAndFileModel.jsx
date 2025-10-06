@@ -139,7 +139,7 @@ export const AddNotesAndFileModel = ({
             onChange={(e) => updateNote(index, e.target.value)}
             placeholder="Enter note..."
             disabled={note.id !== "0"}
-            className={`w-full px-3 py-2 border rounded-md text-sm focus-visible:outline-none ${
+            className={`w-full px-3 py-2 border rounded-md text-sm focus-visible:outline-none focus:border-blue-500 focus:outline focus:outline-sky-500 ${
               note.id !== "0"
                 ? "bg-gray-100 text-gray-500 cursor-not-allowed"
                 : "border-gray-300"

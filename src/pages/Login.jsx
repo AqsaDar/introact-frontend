@@ -116,7 +116,7 @@ function Login() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-colors"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline focus:outline-sky-500 transition-colors"
                     placeholder="Enter your email"
                   />
                 </div>
@@ -142,7 +142,7 @@ function Login() {
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-colors"
+                    className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline focus:outline-sky-500 transition-colors"
                     placeholder="Enter your password"
                   />
                   <button

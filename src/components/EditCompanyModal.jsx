@@ -92,8 +92,6 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
 
       toast.success("Company updated successfully");
       onSave(formData, company.id);
-      debugger
-    //   onClose();
     } catch (error) {
       console.error("Error updating company:", error);
       toast.error(error?.message || "Failed to update company");
@@ -141,7 +139,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="text"
                 value={formData.company_name || ""}
                 onChange={(e) => handleChange("company_name", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500 ${
                   errors.company_name
                     ? "border-red-300 bg-red-50"
                     : "border-gray-300"
@@ -164,7 +162,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="url"
                 value={formData.website || ""}
                 onChange={(e) => handleChange("website", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                className={`w-full px-3 py-2 border border-blue-500 rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500 ${
                   errors.website
                     ? "border-red-300 bg-red-50"
                     : "border-gray-300"
@@ -185,7 +183,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="text"
                 value={formData.industry || ""}
                 onChange={(e) => handleChange("industry", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500"
                 placeholder="Enter industry"
               />
             </div>
@@ -199,7 +197,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="number"
                 value={formData.revenue || ""}
                 onChange={(e) => handleChange("revenue", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500"
                 placeholder="Enter revenue in millions"
               />
             </div>
@@ -213,7 +211,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="number"
                 value={formData.employees || ""}
                 onChange={(e) => handleChange("employees", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500"
                 placeholder="Enter number of employees"
               />
             </div>
@@ -227,7 +225,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="text"
                 value={formData.hq_location || ""}
                 onChange={(e) => handleChange("hq_location", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500"
                 placeholder="Enter headquarters location"
               />
             </div>
@@ -241,7 +239,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="text"
                 value={formData.contact_person || ""}
                 onChange={(e) => handleChange("contact_person", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500 ${
                   errors.contact_person
                     ? "border-red-300 bg-red-50"
                     : "border-gray-300"
@@ -264,7 +262,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="email"
                 value={formData.email || ""}
                 onChange={(e) => handleChange("email", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500 ${
                   errors.email ? "border-red-300 bg-red-50" : "border-gray-300"
                 }`}
                 placeholder="Enter email address"
@@ -283,7 +281,7 @@ const EditCompanyModal = ({ isOpen, onClose, company, onSave }) => {
                 type="tel"
                 value={formData.phone || ""}
                 onChange={(e) => handleChange("phone", e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-lg text-sm focus:border-blue-500 focus:outline focus:outline-sky-500 ${
                   errors.phone ? "border-red-300 bg-red-50" : "border-gray-300"
                 }`}
                 placeholder="Enter phone number"

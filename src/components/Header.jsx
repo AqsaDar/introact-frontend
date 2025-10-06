@@ -19,8 +19,8 @@ const Header = ({ onMenuToggle, showMenuButton = false }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Show branding on all pages
-  const showBranding = true;
+  // Show branding only when not logged in (e.g., login page)
+  const showBranding = !user;
 
   const handleLogout = () => {
     logout();

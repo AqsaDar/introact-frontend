@@ -168,19 +168,49 @@ function SidebarContent({ onLogout, collapsed = false, onToggle }) {
 
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-white border-r border-gray-200">
-      {/* Sidebar Header with Toggle */}
-      <div className="flex items-center justify-end p-4 border-b border-gray-200">
-        <button
-          onClick={onToggle}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? (
-            <ChevronRight className="w-4 h-4 text-gray-600" />
-          ) : (
-            <ChevronLeft className="w-4 h-4 text-gray-600" />
-          )}
-        </button>
+      {/* Branding + Collapse Toggle */}
+      <div className={`px-4 py-4 border-b border-gray-200`}>
+        {collapsed ? (
+          <div className="flex flex-col items-center">
+            <Link to="/" className="flex items-center">
+              <div className="flex items-center justify-center w-10 h-10 bg-gray-600 rounded-lg">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+            </Link>
+            <button
+              onClick={onToggle}
+              aria-label="Expand sidebar"
+              className="mt-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              title="Expand sidebar"
+            >
+              <ChevronRight className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <Link to="/" className="flex items-center">
+              <div className="flex items-center justify-center w-10 h-10 bg-gray-600 rounded-lg">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div className="ml-3">
+                <h1 className="text-base font-bold text-gray-900">
+                  Lead Enrichment System
+                </h1>
+                <p className="text-xs text-gray-500 font-medium">
+                  Automation Platform
+                </p>
+              </div>
+            </Link>
+            <button
+              onClick={onToggle}
+              aria-label="Collapse sidebar"
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors ml-2"
+              title="Collapse sidebar"
+            >
+              <ChevronLeft className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
@@ -233,13 +263,16 @@ function SidebarContent({ onLogout, collapsed = false, onToggle }) {
       <div className={`${collapsed ? "p-2" : "p-4"} border-t border-gray-200`}>
         <button
           onClick={onLogout}
-          className={`w-full flex items-center justify-center rounded-lg border border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-all duration-200 ${
+          className={`w-full flex items-center ${
+            collapsed ? "justify-center gap-2" : "justify-start gap-3"
+          } rounded-xl border border-red-300 bg-white text-red-600 hover:bg-red-50 hover:border-red-400 shadow-sm transition-all duration-200 ${
             collapsed ? "p-3" : "px-4 py-3"
           }`}
-          title={collapsed ? "Sign Out" : undefined}
+          title={collapsed ? "Logout" : undefined}
+          aria-label="Logout"
         >
           <LogOut className="w-4 h-4" />
-          {!collapsed && <span className="ml-2 font-medium">Sign Out</span>}
+          {!collapsed && <span className="font-medium">Logout</span>}
         </button>
       </div>
     </div>
