@@ -491,8 +491,8 @@ export const Upload = () => {
                       key={file.id}
                       className="p-6 hover:bg-gray-50 transition-colors"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
+                      <div className="flex items-center md:justify-between md:flex-row flex-col justify-end">
+                        <div className="flex  items-center space-x-4">
                           <div className="p-2 bg-gray-100 rounded-lg">
                             <FileText className="w-6 h-6 text-gray-600" />
                           </div>
@@ -500,23 +500,23 @@ export const Upload = () => {
                             <h4 className="text-sm font-medium text-gray-900">
                               {file.name}
                             </h4>
-                            <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
+                            <div className="flex md:flex-row flex-col md:items-center space-x-4 text-sm text-gray-500 mt-1">
                               {/* <span>{file.size}</span> */}
                               {/* <span>•</span> */}
                               <span>Uploaded {file.uploadDate}</span>
                               {file.companiesCount > 0 && (
-                                <>
+                                <span>
                                   <span>•</span>
                                   <span>{file.companiesCount} companies</span>
-                                </>
+                                </span>
                               )}
                               {file.validCount && (
-                                <>
+                                <span>
                                   <span>•</span>
                                   <span className="text-green-600">
                                     {file.validCount} valid
                                   </span>
-                                </>
+                                </span>
                               )}
                             </div>
                           </div>

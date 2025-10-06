@@ -49,14 +49,15 @@ const Header = ({ onMenuToggle, showMenuButton = false }) => {
       <div className="flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         {/* Left side - Logo and Menu */}
         <div className="flex items-center">
-          {/* {showMenuButton && (
+          {showMenuButton && (
             <button
               onClick={onMenuToggle}
-              className="text-gray-500 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-100 transition-colors mr-3"
+              aria-label="Open sidebar"
+              className="lg:hidden text-gray-500 hover:text-gray-600 p-2 rounded-lg hover:bg-gray-100 transition-colors mr-3"
             >
               <Menu className="w-6 h-6" />
             </button>
-          )} */}
+          )}
 
           {/* Logo - Only show on login page */}
           {showBranding && (
