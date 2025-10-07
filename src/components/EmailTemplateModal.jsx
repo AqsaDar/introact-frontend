@@ -207,12 +207,99 @@ const EmailTemplateModal = ({
     }
 
     const contentState = formData.body.getCurrentContent();
-    const rawBody = JSON.stringify(convertToRaw(contentState));
+    const raw = convertToRaw(contentState);
+
+    // Convert Draft.js raw content to simple HTML
+    const toHtml = (rawContent) => {
+      if (!rawContent || !Array.isArray(rawContent.blocks)) return "";
+      let html = "";
+      let listOpen = false;
+      let listType = null; // 'ul' | 'ol'
+
+      const closeListIfOpen = () => {
+        if (listOpen) {
+          html +=
+            listType === "ol" ? "</ol>" : "<ul>" === listType ? "</ul>" : "";
+          if (listType === "ol") html += "</ol>";
+          if (listType === "ul") html += "</ul>";
+          listOpen = false;
+          listType = null;
+        }
+      };
+
+      rawContent.blocks.forEach((block, idx) => {
+        const text = (block.text || "")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+        switch (block.type) {
+          case "unordered-list-item": {
+            if (!listOpen || listType !== "ul") {
+              closeListIfOpen();
+              html += "<ul>";
+              listOpen = true;
+              listType = "ul";
+            }
+            html += `<li>${text}</li>`;
+            break;
+          }
+          case "ordered-list-item": {
+            if (!listOpen || listType !== "ol") {
+              closeListIfOpen();
+              html += "<ol>";
+              listOpen = true;
+              listType = "ol";
+            }
+            html += `<li>${text}</li>`;
+            break;
+          }
+          case "header-one":
+          case "header-two":
+          case "header-three":
+          case "header-four":
+          case "header-five":
+          case "header-six": {
+            closeListIfOpen();
+            const tag =
+              block.type === "header-one"
+                ? "h1"
+                : block.type === "header-two"
+                ? "h2"
+                : block.type === "header-three"
+                ? "h3"
+                : block.type === "header-four"
+                ? "h4"
+                : block.type === "header-five"
+                ? "h5"
+                : "h6";
+            html += `<${tag}>${text}</${tag}>`;
+            break;
+          }
+          case "blockquote": {
+            closeListIfOpen();
+            html += `<blockquote>${text}</blockquote>`;
+            break;
+          }
+          case "code-block": {
+            closeListIfOpen();
+            html += `<pre><code>${text}</code></pre>`;
+            break;
+          }
+          default: {
+            closeListIfOpen();
+            html += `<p>${text}</p>`;
+          }
+        }
+        if (idx === rawContent.blocks.length - 1) closeListIfOpen();
+      });
+      return html;
+    };
+
+    const htmlBody = toHtml(raw);
 
     const payload = {
       name: formData.name.trim(),
       subject: formData.subject.trim(),
-      body: rawBody,
+      body: htmlBody,
       is_active: formData.is_active,
     };
 

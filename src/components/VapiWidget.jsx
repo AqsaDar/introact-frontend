@@ -76,7 +76,7 @@ export const VapiWidget = ({apiKey, assistantId,sessionId, config}) => {
       if (vapi) {
         const res = await vapi.start(assistantId,config);
         setCallId(res.id);
-        await postRequest('company/api/ai-call/session/attach', {
+        await postRequest('company/ai-call/session/attach', {
           "session_id": sessionId,
           "vapi_call_id": res.id
         });

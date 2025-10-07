@@ -14,7 +14,7 @@ export default function VapiIntegration() {
   useEffect(() => {
     const fetchSessionId = async () => {
       try {
-        const response = await postRequest("company/api/ai-call/session/init", {
+        const response = await postRequest("company/ai-call/session/init", {
           token,
         });
         setSessionId(response.data.session_id);
