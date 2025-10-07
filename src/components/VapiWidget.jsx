@@ -82,6 +82,7 @@ export const VapiWidget = ({apiKey, assistantId,sessionId, config}) => {
         });
       }
     } catch (e) {
+      console.error('Vapi error:', e);
       setIsInitializing(false);
     }
   };
@@ -139,7 +140,7 @@ export const VapiWidget = ({apiKey, assistantId,sessionId, config}) => {
       )}
 
       {/* Idle state (rarely visible since auto-start) */}
-      {!isInitializing && !isConnected && (
+      {/* {!isInitializing && !isConnected && (
         <div style={{display:'flex', flexDirection:'column', alignItems:'center', gap:12}}>
           <button
             // onClick={startCall}
@@ -172,7 +173,7 @@ export const VapiWidget = ({apiKey, assistantId,sessionId, config}) => {
           <div style={{fontWeight:700, color:'#0f172a'}}>Talk to Assistant</div>
           <div style={{fontSize:12, color:'#6b7280'}}>Start a voice conversation</div>
         </div>
-      )}
+      )} */}
 
       {/* In-call UI */}
       {isConnected && (
