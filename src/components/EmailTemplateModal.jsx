@@ -1,12 +1,6 @@
-import React, { useState, useEffect } from "react";
-import {
-  Editor,
-  EditorState,
-  convertToRaw,
-  convertFromRaw,
-  RichUtils,
-} from "draft-js";
-import "draft-js/dist/Draft.css";
+import React, { useState, useEffect, useRef } from "react";
+import Quill from "quill";
+import "quill/dist/quill.snow.css";
 import {
   X,
   Save,
@@ -30,44 +24,57 @@ const EmailTemplateModal = ({
   const [formData, setFormData] = useState({
     name: "",
     subject: "",
-    body: EditorState.createEmpty(),
+    body: "",
     is_active: true,
   });
   const [errors, setErrors] = useState({});
   const [previewData, setPreviewData] = useState({});
+  const quillRef = useRef(null); // Quill instance
+  const editorElRef = useRef(null); // DOM container
 
   const DEFAULT_VARIABLES = [
     { key: "firstname", label: "First Name" },
     { key: "lastname", label: "Last Name" },
     { key: "company", label: "Company" },
     { key: "email", label: "Email" },
+    { key: "name", label: "Name" },
+    { key: "website", label: "Website" },
+    { key: "phone_number", label: "Phone Number" },
+    { key: "call_link", label: "Call Link" },
     { key: "sigupdate", label: "Signup Date" },
     { key: "planname", label: "Plan Name" },
     { key: "unsubscribelink", label: "Unsubscribe Link" },
   ];
+useEffect(() => {
+  debugger
+  if (formData.body) {
+    quillRef.current.root.innerHTML = formData.body;
 
+  }
+}, [formData.body]);
   useEffect(() => {
     if (isOpen) {
+      debugger
       if (template) {
-        setFormData({
-          ...template,
-          body: template.body
-            ? EditorState.createWithContent(
-                convertFromRaw(JSON.parse(template.body))
-              )
-            : EditorState.createEmpty(),
-        });
+        setFormData({...template, body: template.body});
       } else {
         setFormData({
           name: "",
           subject: "",
-          body: EditorState.createEmpty(),
+          body: "",
           is_active: true,
         });
       }
       setErrors({});
     }
   }, [isOpen, template]);
+  
+  // Reset quill instance when modal closes so it re-initializes cleanly on next open
+  useEffect(() => {
+    if (!isOpen) {
+      quillRef.current = null;
+    }
+  }, [isOpen]);
 
   const replacePlaceholders = (text, variables) => {
     if (!text) return text;
@@ -84,32 +91,19 @@ const EmailTemplateModal = ({
     }
   };
 
-  const handleBodyChange = (editorState) => {
-    setFormData((prev) => ({ ...prev, body: editorState }));
-    if (errors.body) {
-      setErrors((prev) => ({ ...prev, body: "" }));
-    }
+  const handleBodyChange = (html) => {
+    setFormData((prev) => ({ ...prev, body: html }));
+    if (errors.body) setErrors((prev) => ({ ...prev, body: "" }));
   };
 
   const insertTag = (tag) => {
-    const editorState = formData.body;
-    const contentState = editorState.getCurrentContent();
-    const selectionState = editorState.getSelection();
-
-    const newContentState = contentState.createTextWithEntity(
-      selectionState.getStartOffset(),
-      selectionState.getEndOffset() - selectionState.getStartOffset(),
-      "IMMUTABLE",
-      { tag }
-    );
-
-    const newEditorState = EditorState.push(
-      editorState,
-      newContentState,
-      "insert-characters"
-    );
-
-    setFormData((prev) => ({ ...prev, body: newEditorState }));
+    const q = quillRef.current;
+    if (!q) return;
+    const range = q.getSelection(true);
+    const index = range ? range.index : q.getLength();
+    q.insertText(index, tag);
+    q.setSelection(index + tag.length, 0);
+    handleBodyChange(q.root.innerHTML);
   };
 
   const handleDragStart = (e, tag) => {
@@ -144,42 +138,52 @@ const EmailTemplateModal = ({
     e.currentTarget.classList.remove("bg-blue-50", "border-blue-400");
   };
 
-  const handleKeyCommand = (command) => {
-    const newState = RichUtils.handleKeyCommand(formData.body, command);
-    if (newState) {
-      handleBodyChange(newState);
-      return "handled";
-    }
-    return "not-handled";
-  };
+  const handleKeyCommand = () => "not-handled";
 
-  const onBoldClick = () => {
-    handleBodyChange(RichUtils.toggleInlineStyle(formData.body, "BOLD"));
-  };
+  const onBoldClick = () => quillRef.current?.format("bold", true);
+  const onItalicClick = () => quillRef.current?.format("italic", true);
+  const onUnderlineClick = () => quillRef.current?.format("underline", true);
+  const onCodeClick = () => quillRef.current?.format("code", true);
 
-  const onItalicClick = () => {
-    handleBodyChange(RichUtils.toggleInlineStyle(formData.body, "ITALIC"));
-  };
+  const applyInlineStyleSmart = () => {};
 
-  const onUnderlineClick = () => {
-    handleBodyChange(RichUtils.toggleInlineStyle(formData.body, "UNDERLINE"));
-  };
-
-  const onCodeClick = () => {
-    handleBodyChange(RichUtils.toggleInlineStyle(formData.body, "CODE"));
-  };
+  // Sticky inline style toggling: persists while typing
+  const toggleInlineStyleSticky = () => {};
 
   const onBlockTypeChange = (blockType) => {
-    handleBodyChange(RichUtils.toggleBlockType(formData.body, blockType));
+    const map = {
+      "header-one": 1,
+      "header-two": 2,
+      "header-three": 3,
+      "header-four": 4,
+      "header-five": 5,
+      "header-six": 6,
+      blockquote: "blockquote",
+      "code-block": "code-block",
+    };
+    const q = quillRef.current;
+    if (!q) return;
+    if (map[blockType] && typeof map[blockType] === "number") {
+      q.format("header", map[blockType]);
+    } else if (blockType === "blockquote") {
+      q.format("blockquote", true);
+    } else if (blockType === "code-block") {
+      q.format("code-block", true);
+    }
+    handleBodyChange(q.root.innerHTML);
   };
 
   const onListClick = (listType) => {
-    handleBodyChange(RichUtils.toggleBlockType(formData.body, listType));
+    const q = quillRef.current;
+    if (!q) return;
+    if (listType === "unordered-list-item") q.format("list", "bullet");
+    if (listType === "ordered-list-item") q.format("list", "ordered");
+    handleBodyChange(q.root.innerHTML);
   };
 
   const validateForm = () => {
     const newErrors = {};
-
+    debugger
     if (!formData.name.trim()) {
       newErrors.name = "Name is required";
     } else if (formData.name.length > 150) {
@@ -191,8 +195,10 @@ const EmailTemplateModal = ({
     } else if (formData.subject.length > 200) {
       newErrors.subject = "Subject must be less than 200 characters";
     }
-
-    const bodyText = formData.body.getCurrentContent().getPlainText();
+    debugger
+    const tmp = document.createElement("div");
+    tmp.innerHTML = formData.body || "";
+    const bodyText = (tmp.textContent || tmp.innerText || "").trim();
     if (!bodyText.trim()) {
       newErrors.body = "Body is required";
     }
@@ -205,96 +211,9 @@ const EmailTemplateModal = ({
     if (!validateForm()) {
       return;
     }
-
-    const contentState = formData.body.getCurrentContent();
-    const raw = convertToRaw(contentState);
-
-    // Convert Draft.js raw content to simple HTML
-    const toHtml = (rawContent) => {
-      if (!rawContent || !Array.isArray(rawContent.blocks)) return "";
-      let html = "";
-      let listOpen = false;
-      let listType = null; // 'ul' | 'ol'
-
-      const closeListIfOpen = () => {
-        if (listOpen) {
-          html +=
-            listType === "ol" ? "</ol>" : "<ul>" === listType ? "</ul>" : "";
-          if (listType === "ol") html += "</ol>";
-          if (listType === "ul") html += "</ul>";
-          listOpen = false;
-          listType = null;
-        }
-      };
-
-      rawContent.blocks.forEach((block, idx) => {
-        const text = (block.text || "")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
-        switch (block.type) {
-          case "unordered-list-item": {
-            if (!listOpen || listType !== "ul") {
-              closeListIfOpen();
-              html += "<ul>";
-              listOpen = true;
-              listType = "ul";
-            }
-            html += `<li>${text}</li>`;
-            break;
-          }
-          case "ordered-list-item": {
-            if (!listOpen || listType !== "ol") {
-              closeListIfOpen();
-              html += "<ol>";
-              listOpen = true;
-              listType = "ol";
-            }
-            html += `<li>${text}</li>`;
-            break;
-          }
-          case "header-one":
-          case "header-two":
-          case "header-three":
-          case "header-four":
-          case "header-five":
-          case "header-six": {
-            closeListIfOpen();
-            const tag =
-              block.type === "header-one"
-                ? "h1"
-                : block.type === "header-two"
-                ? "h2"
-                : block.type === "header-three"
-                ? "h3"
-                : block.type === "header-four"
-                ? "h4"
-                : block.type === "header-five"
-                ? "h5"
-                : "h6";
-            html += `<${tag}>${text}</${tag}>`;
-            break;
-          }
-          case "blockquote": {
-            closeListIfOpen();
-            html += `<blockquote>${text}</blockquote>`;
-            break;
-          }
-          case "code-block": {
-            closeListIfOpen();
-            html += `<pre><code>${text}</code></pre>`;
-            break;
-          }
-          default: {
-            closeListIfOpen();
-            html += `<p>${text}</p>`;
-          }
-        }
-        if (idx === rawContent.blocks.length - 1) closeListIfOpen();
-      });
-      return html;
-    };
-
-    const htmlBody = toHtml(raw);
+    const htmlBody = quillRef.current
+      ? quillRef.current.root.innerHTML
+      : formData.body || "";
 
     const payload = {
       name: formData.name.trim(),
@@ -307,47 +226,16 @@ const EmailTemplateModal = ({
   };
 
   const copyHTML = () => {
-    const contentState = formData.body.getCurrentContent();
-    const raw = convertToRaw(contentState);
-    const blocks = raw.blocks || [];
-
-    let html = "";
-    blocks.forEach((block) => {
-      const text = block.text || "";
-      const style =
-        block.type === "header-one"
-          ? "h1"
-          : block.type === "header-two"
-          ? "h2"
-          : block.type === "header-three"
-          ? "h3"
-          : block.type === "header-four"
-          ? "h4"
-          : block.type === "header-five"
-          ? "h5"
-          : block.type === "header-six"
-          ? "h6"
-          : block.type === "blockquote"
-          ? "blockquote"
-          : block.type === "code-block"
-          ? "pre"
-          : "p";
-
-      if (block.type === "code-block") {
-        html += `<pre><code>${text}</code></pre>`;
-      } else {
-        html += `<${style}>${text}</${style}>`;
-      }
-    });
-
+    const html = quillRef.current
+      ? quillRef.current.root.innerHTML
+      : formData.body || "";
     navigator.clipboard.writeText(html);
   };
 
   const getPreviewContent = () => {
-    // Show subject and body as-is; backend will replace tokens
     const subject = formData.subject || "";
-    const body = formData.body.getCurrentContent().getPlainText() || "";
-    return { subject, body };
+    const bodyHtml = formData.body || "";
+    return { subject, bodyHtml };
   };
 
   if (!isOpen) return null;
@@ -465,9 +353,13 @@ const EmailTemplateModal = ({
                       Subject: {preview.subject || "No subject"}
                     </div>
                   </div>
-                  <div className="text-sm" style={{ wordBreak: "break-word" }}>
-                    {preview.body || "No content"}
-                  </div>
+                  <div
+                    className="text-sm"
+                    style={{ wordBreak: "break-word" }}
+                    dangerouslySetInnerHTML={{
+                      __html: preview.bodyHtml || "<p>No content</p>",
+                    }}
+                  />
                 </div>
               </div>
 
@@ -540,129 +432,40 @@ const EmailTemplateModal = ({
                   </p>
                 </div>
 
-                {/* Formatting Toolbar */}
-                <div className="border border-gray-300 rounded-t-lg bg-white p-2 space-y-2">
-                  <div className="flex flex-wrap gap-1">
-                    <button
-                      onClick={() => onBlockTypeChange("header-one")}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-                    >
-                      H1
-                    </button>
-                    <button
-                      onClick={() => onBlockTypeChange("header-two")}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-                    >
-                      H2
-                    </button>
-                    <button
-                      onClick={() => onBlockTypeChange("header-three")}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-                    >
-                      H3
-                    </button>
-                    <button
-                      onClick={() => onBlockTypeChange("header-four")}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-                    >
-                      H4
-                    </button>
-                    <button
-                      onClick={() => onBlockTypeChange("header-five")}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-                    >
-                      H5
-                    </button>
-                    <button
-                      onClick={() => onBlockTypeChange("header-six")}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-                    >
-                      H6
-                    </button>
-                    <button
-                      onClick={() => onBlockTypeChange("blockquote")}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-                    >
-                      Quote
-                    </button>
-                    <button
-                      onClick={() => onListClick("unordered-list-item")}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-                    >
-                      UL
-                    </button>
-                    <button
-                      onClick={() => onListClick("ordered-list-item")}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-                    >
-                      OL
-                    </button>
-                    <button
-                      onClick={() => onBlockTypeChange("code-block")}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-                    >
-                      Code
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    <button
-                      onClick={onBoldClick}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded flex items-center gap-1"
-                    >
-                      <Bold className="w-3 h-3" />
-                      Bold
-                    </button>
-                    <button
-                      onClick={onItalicClick}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded flex items-center gap-1"
-                    >
-                      <Italic className="w-3 h-3" />
-                      Italic
-                    </button>
-                    <button
-                      onClick={onUnderlineClick}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded flex items-center gap-1"
-                    >
-                      <Underline className="w-3 h-3" />
-                      Underline
-                    </button>
-                    <button
-                      onClick={onCodeClick}
-                      className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded flex items-center gap-1"
-                    >
-                      <Code className="w-3 h-3" />
-                      Code
-                    </button>
-                  </div>
-                </div>
+                {/* Quill Toolbar (native) will be rendered by Quill */}
 
                 {/* Editor Drop Zone */}
                 <div
-                  className={`border-t-0 border border-gray-300 rounded-b-lg p-3 min-h-[150px] focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-colors ${
+                  className={`border-t-0 border border-gray-300 rounded-b-lg p-3 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-colors ${
                     errors.body ? "border-red-500" : "border-gray-300"
                   }`}
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  onDragEnter={(e) => {
-                    e.preventDefault();
-                    e.currentTarget.classList.add(
-                      "bg-blue-50",
-                      "border-blue-400"
-                    );
-                  }}
-                  onDragLeave={(e) => {
-                    e.preventDefault();
-                    e.currentTarget.classList.remove(
-                      "bg-blue-50",
-                      "border-blue-400"
-                    );
-                  }}
                 >
-                  <Editor
-                    editorState={formData.body}
-                    onChange={handleBodyChange}
-                    handleKeyCommand={handleKeyCommand}
-                    placeholder="Enter your email content here... You can also drag dynamic tags here!"
+                  <div
+                    ref={(el) => {
+                      if (el && !quillRef.current) {
+                        const q = new Quill(el, {
+                          theme: "snow",
+                          modules: {
+                            toolbar: [
+                              [{ header: [1, 2, 3, 4, 5, 6, false] }],
+                              ["bold", "italic", "underline", "code"],
+                              [{ list: "ordered" }, { list: "bullet" }],
+                              ["blockquote", "code-block"],
+                              ["clean"],
+                            ],
+                          },
+                        });
+                        quillRef.current = q;
+                        q.on("text-change", () => {
+                          handleBodyChange(q.root.innerHTML);
+                        });
+                        // Set initial HTML safely
+                        q.setText("");
+                        q.clipboard.dangerouslyPasteHTML(formData.body || "");
+                      }
+                    }}
                   />
                 </div>
                 {errors.body && (
